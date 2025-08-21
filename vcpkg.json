@@ -1,0 +1,11 @@
+{
+	"dependencies": [
+		"vulkan",
+		{
+			"name": "sdl3",
+			"features": [
+				"vulkan"
+			]
+		}
+	]
+}
