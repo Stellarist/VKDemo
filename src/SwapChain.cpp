@@ -1,9 +1,8 @@
 #include "SwapChain.hpp"
 
-SwapChain::SwapChain(Window& window, Device& device, Surface& surface) :
+SwapChain::SwapChain(Window& window, Context& context) :
     window(window),
-    device(device),
-    surface(surface)
+    context(context)
 {
 	createSwapChain();
 	createImageViews();
@@ -12,8 +11,8 @@ SwapChain::SwapChain(Window& window, Device& device, Surface& surface) :
 SwapChain::~SwapChain()
 {
 	for (auto& view : image_views)
-		device.getLogicalDevice().destroyImageView(view);
-	device.getLogicalDevice().destroySwapchainKHR(swap_chain);
+		context.getLogicalDevice().destroyImageView(view);
+	context.getLogicalDevice().destroySwapchainKHR(swap_chain);
 }
 
 void SwapChain::createSwapChain()
@@ -25,7 +24,7 @@ void SwapChain::createSwapChain()
 	    .setImageArrayLayers(1)
 	    .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
 	    .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
-	    .setSurface(surface.get())
+	    .setSurface(context.getSurface())
 	    .setImageColorSpace(format.colorSpace)
 	    .setImageFormat(format.format)
 	    .setImageExtent(extent)
@@ -34,7 +33,7 @@ void SwapChain::createSwapChain()
 	    .setClipped(vk::True)
 	    .setPresentMode(present);
 
-	auto [graphics_family, present_family] = device.getQueueFamilyIndices();
+	auto [graphics_family, present_family] = context.getQueueFamilyIndices();
 	if (present_family.value() == graphics_family.value())
 		create_info.setQueueFamilyIndices(present_family.value())
 		    .setImageSharingMode(vk::SharingMode::eExclusive);
@@ -44,9 +43,9 @@ void SwapChain::createSwapChain()
 		    .setImageSharingMode(vk::SharingMode::eConcurrent);
 	}
 
-	swap_chain = device.getLogicalDevice().createSwapchainKHR(create_info);
+	swap_chain = context.getLogicalDevice().createSwapchainKHR(create_info);
 
-	images = device.getLogicalDevice().getSwapchainImagesKHR(swap_chain);
+	images = context.getLogicalDevice().getSwapchainImagesKHR(swap_chain);
 	image_views.resize(images.size());
 }
 
@@ -73,25 +72,25 @@ void SwapChain::createImageViews()
 		    .setSubresourceRange(range)
 		    .setComponents(mapping);
 
-		image_views[i] = device.getLogicalDevice().createImageView(create_info);
+		image_views[i] = context.getLogicalDevice().createImageView(create_info);
 	}
 }
 
 void SwapChain::querySwapChainInfos(uint32_t width, uint32_t height)
 {
-	auto formats = device.getPhysicalDevice().getSurfaceFormatsKHR(surface.get());
+	auto formats = context.getPhysicalDevice().getSurfaceFormatsKHR(context.getSurface());
 	auto fit = std::find_if(formats.begin(), formats.end(), [](const vk::SurfaceFormatKHR& format) {
 		return format.format == vk::Format::eR8G8B8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear;
 	});
 	this->format = (fit != formats.end()) ? *fit : formats.front();
 
-	auto presents = device.getPhysicalDevice().getSurfacePresentModesKHR(surface.get());
+	auto presents = context.getPhysicalDevice().getSurfacePresentModesKHR(context.getSurface());
 	auto pit = std::find_if(presents.begin(), presents.end(), [](const vk::PresentModeKHR& present) {
 		return present == vk::PresentModeKHR::eMailbox;
 	});
 	this->present = (pit != presents.end()) ? *pit : vk::PresentModeKHR::eFifo;
 
-	auto capabilities = device.getPhysicalDevice().getSurfaceCapabilitiesKHR(surface.get());
+	auto capabilities = context.getPhysicalDevice().getSurfaceCapabilitiesKHR(context.getSurface());
 	image_count = std::clamp<uint32_t>(capabilities.minImageCount + 1, capabilities.minImageCount, capabilities.maxImageCount);
 	extent.width = std::clamp<uint32_t>(width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
 	extent.height = std::clamp<uint32_t>(height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);

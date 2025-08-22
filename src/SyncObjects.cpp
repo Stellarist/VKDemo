@@ -1,23 +1,23 @@
 #include "SyncObjects.hpp"
 
-SyncObjects::SyncObjects(Device& device) :
-    device(device)
+SyncObjects::SyncObjects(Context& context) :
+    context(context)
 {
 	vk::SemaphoreCreateInfo semaphore_info{};
 
 	vk::FenceCreateInfo fence_info{};
 	fence_info.setFlags(vk::FenceCreateFlagBits::eSignaled);
 
-	image_available_semaphore = device.getLogicalDevice().createSemaphore(semaphore_info);
-	render_finished_semaphore = device.getLogicalDevice().createSemaphore(semaphore_info);
-	in_flight_fence = device.getLogicalDevice().createFence(fence_info);
+	image_available_semaphore = context.getLogicalDevice().createSemaphore(semaphore_info);
+	render_finished_semaphore = context.getLogicalDevice().createSemaphore(semaphore_info);
+	in_flight_fence = context.getLogicalDevice().createFence(fence_info);
 }
 
 SyncObjects::~SyncObjects()
 {
-	device.getLogicalDevice().destroyFence(in_flight_fence);
-	device.getLogicalDevice().destroySemaphore(render_finished_semaphore);
-	device.getLogicalDevice().destroySemaphore(image_available_semaphore);
+	context.getLogicalDevice().destroyFence(in_flight_fence);
+	context.getLogicalDevice().destroySemaphore(render_finished_semaphore);
+	context.getLogicalDevice().destroySemaphore(image_available_semaphore);
 }
 
 vk::Semaphore SyncObjects::getImageAvailableSemaphore()

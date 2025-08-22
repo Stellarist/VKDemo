@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "Device.hpp"
+#include "Context.hpp"
 #include "SwapChain.hpp"
 
 class RenderPass {
@@ -11,14 +11,14 @@ private:
 
 	std::vector<vk::Framebuffer> framebuffers;
 
-	Device&    device;
+	Context&   context;
 	SwapChain& swap_chain;
 
 	void createRenderPass();
 	void createFrameBuffers();
 
 public:
-	RenderPass(Device& device, SwapChain& swap_chain);
+	RenderPass(Context& context, SwapChain& swap_chain);
 	~RenderPass();
 
 	vk::RenderPass get() const;

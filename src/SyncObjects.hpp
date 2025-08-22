@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "Device.hpp"
+#include "Context.hpp"
 
 class SyncObjects {
 private:
@@ -10,10 +10,10 @@ private:
 	vk::Semaphore render_finished_semaphore;
 	vk::Fence     in_flight_fence;
 
-	Device& device;
+	Context& context;
 
 public:
-	SyncObjects(Device& device);
+	SyncObjects(Context& context);
 	~SyncObjects();
 
 	vk::Semaphore getImageAvailableSemaphore();

@@ -5,9 +5,7 @@
 #include <SDL3/SDL_vulkan.h>
 
 #include "Window.hpp"
-#include "Instance.hpp"
-#include "Surface.hpp"
-#include "Device.hpp"
+#include "Context.hpp"
 #include "SwapChain.hpp"
 #include "RenderPass.hpp"
 #include "GraphicsPipeline.hpp"
@@ -18,9 +16,7 @@
 class Application {
 private:
 	Window           window;
-	Instance         instance;
-	Surface          surface;
-	Device           device;
+	Context          context;
 	SwapChain        swap_chain;
 	RenderPass       render_pass;
 	GraphicsPipeline graphics_pipeline;

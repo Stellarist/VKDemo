@@ -1,7 +1,7 @@
 #include "RenderPass.hpp"
 
-RenderPass::RenderPass(Device& device, SwapChain& swap_chain) :
-    device(device),
+RenderPass::RenderPass(Context& context, SwapChain& swap_chain) :
+    context(context),
     swap_chain(swap_chain)
 {
 	createRenderPass();
@@ -11,8 +11,8 @@ RenderPass::RenderPass(Device& device, SwapChain& swap_chain) :
 RenderPass::~RenderPass()
 {
 	for (auto& framebuffer : framebuffers)
-		device.getLogicalDevice().destroyFramebuffer(framebuffer);
-	device.getLogicalDevice().destroyRenderPass(render_pass);
+		context.getLogicalDevice().destroyFramebuffer(framebuffer);
+	context.getLogicalDevice().destroyRenderPass(render_pass);
 }
 
 void RenderPass::createRenderPass()
@@ -48,7 +48,7 @@ void RenderPass::createRenderPass()
 	    .setSubpasses(subpass)
 	    .setDependencies(subpass_dependency);
 
-	render_pass = device.getLogicalDevice().createRenderPass(render_pass_info);
+	render_pass = context.getLogicalDevice().createRenderPass(render_pass_info);
 }
 
 void RenderPass::createFrameBuffers()
@@ -62,7 +62,7 @@ void RenderPass::createFrameBuffers()
 		    .setHeight(swap_chain.getExtent().height)
 		    .setLayers(1);
 
-		framebuffers[i] = device.getLogicalDevice().createFramebuffer(create_info);
+		framebuffers[i] = context.getLogicalDevice().createFramebuffer(create_info);
 	}
 }
 

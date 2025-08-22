@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "Device.hpp"
+#include "Context.hpp"
 #include "RenderPass.hpp"
 
 class SwapChain;
@@ -14,11 +14,11 @@ private:
 	vk::Pipeline       pipeline;
 	vk::PipelineLayout pipeline_layout;
 
-	Device&     device;
+	Context&    context;
 	RenderPass& render_pass;
 
 public:
-	GraphicsPipeline(Device& device, RenderPass& render_pass);
+	GraphicsPipeline(Context& context, RenderPass& render_pass);
 	~GraphicsPipeline();
 
 	vk::Pipeline       get() const;

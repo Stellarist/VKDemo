@@ -4,16 +4,16 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "Device.hpp"
+#include "Context.hpp"
 
 class Shader {
 private:
 	vk::ShaderModule shader;
 
-	Device& device;
+	Context& context;
 
 public:
-	Shader(const std::filesystem::path& filepath, Device& device);
+	Shader(const std::filesystem::path& filepath, Context& context);
 	~Shader();
 
 	vk::ShaderModule get() const;

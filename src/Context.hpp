@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Instance.hpp"
-#include "Surface.hpp"
-
 #include <vulkan/vulkan.hpp>
+
+#include "Window.hpp"
 
 struct QueueFamilyIndices {
 	std::optional<uint32_t> graphics_family;
@@ -12,28 +11,30 @@ struct QueueFamilyIndices {
 	operator bool() const;
 };
 
-class Device {
+class Context {
 private:
+	vk::Instance       instance{};
+	vk::SurfaceKHR     surface{};
 	vk::PhysicalDevice physical_device{};
 	vk::Device         logical_device{};
 	vk::Queue          graphics_queue{};
 	vk::Queue          present_queue{};
 
-	Instance& instance;
-	Surface&  surface;
+	Window& window;
 
-	std::vector<std::string> device_extensions;
+	QueueFamilyIndices queue_family_indices{};
 
-	QueueFamilyIndices queue_family_indices;
-
+	void createInstance();
+	void createSurface();
 	void pickPhysicalDevice();
 	void createLogicalDevice();
-	void queryQueueFamilyIndices();
 
 public:
-	Device(Instance& instance, Surface& surface);
-	~Device();
+	Context(Window& window);
+	~Context();
 
+	vk::Instance       getInstance() const;
+	vk::SurfaceKHR     getSurface() const;
 	vk::PhysicalDevice getPhysicalDevice() const;
 	vk::Device         getLogicalDevice() const;
 	vk::Queue          getGraphicsQueue() const;

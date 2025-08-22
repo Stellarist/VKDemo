@@ -1,7 +1,7 @@
 #include "CommandBuffer.hpp"
 
-CommandBuffer::CommandBuffer(Device& device, SwapChain& swap_chain, RenderPass& render_pass, GraphicsPipeline& graphics_pipeline, CommandPool& command_pool) :
-    device(device),
+CommandBuffer::CommandBuffer(Context& context, SwapChain& swap_chain, RenderPass& render_pass, GraphicsPipeline& graphics_pipeline, CommandPool& command_pool) :
+    context(context),
     swap_chain(swap_chain),
     render_pass(render_pass),
     graphics_pipeline(graphics_pipeline),
@@ -12,12 +12,12 @@ CommandBuffer::CommandBuffer(Device& device, SwapChain& swap_chain, RenderPass& 
 	    .setLevel(vk::CommandBufferLevel::ePrimary)
 	    .setCommandBufferCount(1);
 
-	command_buffer = device.getLogicalDevice().allocateCommandBuffers(alloc_info).front();
+	command_buffer = context.getLogicalDevice().allocateCommandBuffers(alloc_info).front();
 }
 
 CommandBuffer::~CommandBuffer()
 {
-	device.getLogicalDevice().freeCommandBuffers(command_pool.get(), command_buffer);
+	context.getLogicalDevice().freeCommandBuffers(command_pool.get(), command_buffer);
 }
 
 void CommandBuffer::record(uint32_t image_index)

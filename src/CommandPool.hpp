@@ -2,16 +2,16 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "Device.hpp"
+#include "Context.hpp"
 
 class CommandPool {
 private:
 	vk::CommandPool command_pool;
 
-	Device& device;
+	Context& context;
 
 public:
-	CommandPool(Device& device);
+	CommandPool(Context& context);
 	~CommandPool();
 
 	vk::CommandPool get() const;

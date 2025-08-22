@@ -2,8 +2,8 @@
 
 #include <fstream>
 
-Shader::Shader(const std::filesystem::path& filepath, Device& device) :
-    device(device)
+Shader::Shader(const std::filesystem::path& filepath, Context& context) :
+    context(context)
 {
 	std::ifstream file(filepath, std::ios::binary | std::ios::ate);
 	if (!file.is_open())
@@ -18,14 +18,14 @@ Shader::Shader(const std::filesystem::path& filepath, Device& device) :
 	vk::ShaderModuleCreateInfo create_info{};
 	create_info.setCodeSize(code.size())
 	    .setPCode(reinterpret_cast<const uint32_t*>(code.data()));
-	shader = device.getLogicalDevice().createShaderModule(create_info);
+	shader = context.getLogicalDevice().createShaderModule(create_info);
 	if (!shader)
 		throw std::runtime_error("Failed to create shader module");
 }
 
 Shader::~Shader()
 {
-	device.getLogicalDevice().destroyShaderModule(shader);
+	context.getLogicalDevice().destroyShaderModule(shader);
 }
 
 vk::ShaderModule Shader::get() const

@@ -7,11 +7,11 @@
 #include "CommandBuffer.hpp"
 #include "SyncObjects.hpp"
 
-GraphicsPipeline::GraphicsPipeline(Device& device, RenderPass& render_pass) :
-    device(device),
+GraphicsPipeline::GraphicsPipeline(Context& context, RenderPass& render_pass) :
+    context(context),
     render_pass(render_pass)
 {
-	Shader shader_module(SHADER_DIR "/default.spv", device);
+	Shader shader_module(SHADER_DIR "/default.spv", context);
 
 	vk::PipelineShaderStageCreateInfo vertex_stage_info{};
 	vertex_stage_info.setStage(vk::ShaderStageFlagBits::eVertex)
@@ -72,7 +72,7 @@ GraphicsPipeline::GraphicsPipeline(Device& device, RenderPass& render_pass) :
 	pipeline_layout_info.setSetLayoutCount(0)
 	    .setPushConstantRangeCount(0);
 
-	pipeline_layout = device.getLogicalDevice().createPipelineLayout(pipeline_layout_info);
+	pipeline_layout = context.getLogicalDevice().createPipelineLayout(pipeline_layout_info);
 
 	vk::GraphicsPipelineCreateInfo pipeline_info{};
 	pipeline_info.setStageCount(shader_stages.size())
@@ -88,13 +88,13 @@ GraphicsPipeline::GraphicsPipeline(Device& device, RenderPass& render_pass) :
 	    .setRenderPass(render_pass.get())
 	    .setSubpass(0);
 
-	pipeline = device.getLogicalDevice().createGraphicsPipeline({}, pipeline_info).value;
+	pipeline = context.getLogicalDevice().createGraphicsPipeline({}, pipeline_info).value;
 }
 
 GraphicsPipeline::~GraphicsPipeline()
 {
-	device.getLogicalDevice().destroyPipeline(pipeline);
-	device.getLogicalDevice().destroyPipelineLayout(pipeline_layout);
+	context.getLogicalDevice().destroyPipeline(pipeline);
+	context.getLogicalDevice().destroyPipelineLayout(pipeline_layout);
 }
 
 void GraphicsPipeline::render(SwapChain* swap_chain, CommandBuffer* command_buffer, SyncObjects* sync_objects)
@@ -103,11 +103,11 @@ void GraphicsPipeline::render(SwapChain* swap_chain, CommandBuffer* command_buff
 	auto render_finished_semaphore = sync_objects->getRenderFinishedSemaphore();
 	auto in_flight_fence = sync_objects->getInFlightFence();
 
-	if (device.getLogicalDevice().waitForFences(in_flight_fence, true, std::numeric_limits<uint64_t>::max()) != vk::Result::eSuccess)
+	if (context.getLogicalDevice().waitForFences(in_flight_fence, true, std::numeric_limits<uint64_t>::max()) != vk::Result::eSuccess)
 		std::println("Failed to wait for fence");
-	device.getLogicalDevice().resetFences(in_flight_fence);
+	context.getLogicalDevice().resetFences(in_flight_fence);
 
-	auto [result, image_index] = device.getLogicalDevice().acquireNextImageKHR(swap_chain->get(), std::numeric_limits<uint64_t>::max(), image_available_semaphore);
+	auto [result, image_index] = context.getLogicalDevice().acquireNextImageKHR(swap_chain->get(), std::numeric_limits<uint64_t>::max(), image_available_semaphore);
 	if (result != vk::Result::eSuccess)
 		std::println("Failed to acquire swap chain image: {}", vk::to_string(result));
 
@@ -124,13 +124,13 @@ void GraphicsPipeline::render(SwapChain* swap_chain, CommandBuffer* command_buff
 	    .setPWaitDstStageMask(&wait_stages)
 	    .setWaitSemaphores(image_available_semaphore)
 	    .setSignalSemaphores(render_finished_semaphore);
-	device.getGraphicsQueue().submit(submit_info, in_flight_fence);
+	context.getGraphicsQueue().submit(submit_info, in_flight_fence);
 
 	vk::PresentInfoKHR present_info{};
 	present_info.setImageIndices(image_index)
 	    .setSwapchains(swap_chains)
 	    .setWaitSemaphores(render_finished_semaphore);
-	if (device.getGraphicsQueue().presentKHR(present_info) != vk::Result::eSuccess)
+	if (context.getGraphicsQueue().presentKHR(present_info) != vk::Result::eSuccess)
 		std::println("Failed to present swap chain image");
 }
 

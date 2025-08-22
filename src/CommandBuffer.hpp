@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "Device.hpp"
+#include "Context.hpp"
 #include "SwapChain.hpp"
 #include "RenderPass.hpp"
 #include "GraphicsPipeline.hpp"
@@ -12,14 +12,14 @@ class CommandBuffer {
 private:
 	vk::CommandBuffer command_buffer;
 
-	Device&           device;
+	Context&          context;
 	SwapChain&        swap_chain;
 	RenderPass&       render_pass;
 	GraphicsPipeline& graphics_pipeline;
 	CommandPool&      command_pool;
 
 public:
-	CommandBuffer(Device& device, SwapChain& swap_chain, RenderPass& render_pass, GraphicsPipeline& graphics_pipeline, CommandPool& command_pool);
+	CommandBuffer(Context& context, SwapChain& swap_chain, RenderPass& render_pass, GraphicsPipeline& graphics_pipeline, CommandPool& command_pool);
 	~CommandBuffer();
 
 	void record(uint32_t image_index);

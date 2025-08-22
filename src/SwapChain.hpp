@@ -3,8 +3,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "Window.hpp"
-#include "Device.hpp"
-#include "Surface.hpp"
+#include "Context.hpp"
 
 class SwapChain {
 private:
@@ -19,15 +18,14 @@ private:
 	std::vector<vk::ImageView> image_views;
 
 	Window&  window;
-	Device&  device;
-	Surface& surface;
+	Context& context;
 
 	void createSwapChain();
 	void createImageViews();
 	void querySwapChainInfos(uint32_t width, uint32_t height);
 
 public:
-	SwapChain(Window& window, Device& device, Surface& surface);
+	SwapChain(Window& window, Context& context);
 	~SwapChain();
 
 	vk::SwapchainKHR                get() const;

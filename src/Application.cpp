@@ -5,15 +5,13 @@ constexpr int SCR_HEIGHT = 1440;
 
 Application::Application() :
     window("VKDemo", SCR_WIDTH, SCR_HEIGHT),
-    instance(),
-    surface(window, instance),
-    device(instance, surface),
-    swap_chain(window, device, surface),
-    render_pass(device, swap_chain),
-    graphics_pipeline(device, render_pass),
-    command_pool(device),
-    command_buffer(device, swap_chain, render_pass, graphics_pipeline, command_pool),
-    sync_objects(device)
+    context(window),
+    swap_chain(window, context),
+    render_pass(context, swap_chain),
+    graphics_pipeline(context, render_pass),
+    command_pool(context),
+    command_buffer(context, swap_chain, render_pass, graphics_pipeline, command_pool),
+    sync_objects(context)
 {
 }
 
@@ -42,6 +40,6 @@ void Application::run()
 			}
 		}
 
-		device.getLogicalDevice().waitIdle();
+		context.getLogicalDevice().waitIdle();
 	}
 }
