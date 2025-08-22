@@ -11,7 +11,7 @@ GraphicsPipeline::GraphicsPipeline(Device& device, RenderPass& render_pass) :
     device(device),
     render_pass(render_pass)
 {
-	Shader shader_module(SHADER_DIR "/main.spv", device);
+	Shader shader_module(SHADER_DIR "/default.spv", device);
 
 	vk::PipelineShaderStageCreateInfo vertex_stage_info{};
 	vertex_stage_info.setStage(vk::ShaderStageFlagBits::eVertex)
