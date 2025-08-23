@@ -1,52 +1,70 @@
 #include "SwapChain.hpp"
 
 SwapChain::SwapChain(Window& window, Context& context) :
-    window(window),
-    context(context)
+    window(&window),
+    context(&context)
 {
-	createSwapChain();
+	create(window.getWidth(), window.getHeight());
 	createImageViews();
 }
 
 SwapChain::~SwapChain()
 {
-	for (auto& view : image_views)
-		context.getLogicalDevice().destroyImageView(view);
-	context.getLogicalDevice().destroySwapchainKHR(swap_chain);
+	destroyImageViews();
+	context->getLogicalDevice().destroySwapchainKHR(swap_chain);
 }
 
-void SwapChain::createSwapChain()
+void SwapChain::create(uint32_t width, uint32_t height, bool old)
 {
-	querySwapChainInfos(window.getWidth(), window.getHeight());
+	auto details = querySwapChainDetails(width, height);
+
+	format = chooseSwapSurfaceFormat(details.formats);
+	present = chooseSwapPresentMode(details.present_modes);
+	extent = chooseSwapExtent(details.capabilities, width, height);
+
+	image_count = std::clamp<uint32_t>(details.capabilities.minImageCount + 1,
+	                                   details.capabilities.minImageCount,
+	                                   details.capabilities.maxImageCount);
 
 	vk::SwapchainCreateInfoKHR create_info{};
-	create_info.setClipped(true)
+	create_info.setClipped(vk::True)
 	    .setImageArrayLayers(1)
 	    .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
 	    .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
-	    .setSurface(context.getSurface())
+	    .setSurface(context->getSurface())
 	    .setImageColorSpace(format.colorSpace)
 	    .setImageFormat(format.format)
 	    .setImageExtent(extent)
 	    .setMinImageCount(image_count)
-	    .setPreTransform(transform)
+	    .setPreTransform(details.capabilities.currentTransform)
 	    .setClipped(vk::True)
-	    .setPresentMode(present);
+	    .setPresentMode(present)
+	    .setOldSwapchain(old ? swap_chain : nullptr);
 
-	auto [graphics_family, present_family] = context.getQueueFamilyIndices();
-	if (present_family.value() == graphics_family.value())
-		create_info.setQueueFamilyIndices(present_family.value())
+	auto [graphics_index, present_index] = context->getQueueFamilyIndices();
+	if (present_index == graphics_index)
+		create_info.setQueueFamilyIndices(present_index.value())
 		    .setImageSharingMode(vk::SharingMode::eExclusive);
 	else {
-		std::array queue_families = {graphics_family.value(), present_family.value()};
+		std::array queue_families = {graphics_index.value(), present_index.value()};
 		create_info.setQueueFamilyIndices(queue_families)
 		    .setImageSharingMode(vk::SharingMode::eConcurrent);
 	}
 
-	swap_chain = context.getLogicalDevice().createSwapchainKHR(create_info);
+	swap_chain = context->getLogicalDevice().createSwapchainKHR(create_info);
 
-	images = context.getLogicalDevice().getSwapchainImagesKHR(swap_chain);
+	images = context->getLogicalDevice().getSwapchainImagesKHR(swap_chain);
 	image_views.resize(images.size());
+}
+
+void SwapChain::recreate(uint32_t width, uint32_t height)
+{
+	vk::SwapchainKHR old_swap_chain = swap_chain;
+	destroyImageViews();
+
+	create(width, height, true);
+	context->getLogicalDevice().destroySwapchainKHR(old_swap_chain);
+	createImageViews();
 }
 
 void SwapChain::createImageViews()
@@ -72,29 +90,70 @@ void SwapChain::createImageViews()
 		    .setSubresourceRange(range)
 		    .setComponents(mapping);
 
-		image_views[i] = context.getLogicalDevice().createImageView(create_info);
+		image_views[i] = context->getLogicalDevice().createImageView(create_info);
 	}
 }
 
-void SwapChain::querySwapChainInfos(uint32_t width, uint32_t height)
+void SwapChain::destroyImageViews()
 {
-	auto formats = context.getPhysicalDevice().getSurfaceFormatsKHR(context.getSurface());
-	auto fit = std::find_if(formats.begin(), formats.end(), [](const vk::SurfaceFormatKHR& format) {
+	for (auto& view : image_views)
+		context->getLogicalDevice().destroyImageView(view);
+
+	image_views.clear();
+}
+
+uint32_t SwapChain::acquireNextImage(vk::Semaphore semaphore, vk::Fence fence)
+{
+	auto [result, image_index] = context->getLogicalDevice().acquireNextImageKHR(swap_chain, std::numeric_limits<uint64_t>::max(), semaphore, fence);
+	return result == vk::Result::eSuccess ? image_index : -1;
+}
+
+void SwapChain::presentImage(vk::Queue present_queue, uint32_t image_index, std::span<const vk::Semaphore> wait_semaphore)
+{
+	vk::PresentInfoKHR present_info{};
+	present_info.setImageIndices(image_index)
+	    .setSwapchains(swap_chain)
+	    .setWaitSemaphores(wait_semaphore);
+
+	if (present_queue.presentKHR(present_info) != vk::Result::eSuccess)
+		throw std::runtime_error("Failed to present swap chain image");
+}
+
+SwapChainDetails SwapChain::querySwapChainDetails(uint32_t width, uint32_t height)
+{
+	return {
+	    context->getPhysicalDevice().getSurfaceCapabilitiesKHR(context->getSurface()),
+	    context->getPhysicalDevice().getSurfaceFormatsKHR(context->getSurface()),
+	    context->getPhysicalDevice().getSurfacePresentModesKHR(context->getSurface()),
+	};
+}
+
+vk::SurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(std::span<const vk::SurfaceFormatKHR> surface_formats)
+{
+	auto fit = std::find_if(surface_formats.begin(), surface_formats.end(), [](const vk::SurfaceFormatKHR& format) {
 		return format.format == vk::Format::eR8G8B8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear;
 	});
-	this->format = (fit != formats.end()) ? *fit : formats.front();
 
-	auto presents = context.getPhysicalDevice().getSurfacePresentModesKHR(context.getSurface());
-	auto pit = std::find_if(presents.begin(), presents.end(), [](const vk::PresentModeKHR& present) {
+	return (fit != surface_formats.end()) ? *fit : surface_formats.front();
+}
+
+vk::PresentModeKHR SwapChain::chooseSwapPresentMode(std::span<const vk::PresentModeKHR> present_modes)
+{
+	auto pit = std::find_if(present_modes.begin(), present_modes.end(), [](const vk::PresentModeKHR& present) {
 		return present == vk::PresentModeKHR::eMailbox;
 	});
-	this->present = (pit != presents.end()) ? *pit : vk::PresentModeKHR::eFifo;
+	return (pit != present_modes.end()) ? *pit : vk::PresentModeKHR::eFifo;
+}
 
-	auto capabilities = context.getPhysicalDevice().getSurfaceCapabilitiesKHR(context.getSurface());
-	image_count = std::clamp<uint32_t>(capabilities.minImageCount + 1, capabilities.minImageCount, capabilities.maxImageCount);
-	extent.width = std::clamp<uint32_t>(width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-	extent.height = std::clamp<uint32_t>(height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-	transform = capabilities.currentTransform;
+vk::Extent2D SwapChain::chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities, uint32_t width, uint32_t height)
+{
+	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+		return capabilities.currentExtent;
+	else
+		return {
+		    std::clamp<uint32_t>(width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
+		    std::clamp<uint32_t>(height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height),
+		};
 }
 
 vk::SwapchainKHR SwapChain::get() const
@@ -107,19 +166,14 @@ vk::Extent2D SwapChain::getExtent() const
 	return extent;
 }
 
-vk::SurfaceFormatKHR SwapChain::getFormat() const
+vk::SurfaceFormatKHR SwapChain::getSurfaceFormat() const
 {
 	return format;
 }
 
-vk::PresentModeKHR SwapChain::getPresent() const
+vk::PresentModeKHR SwapChain::getPresentMode() const
 {
 	return present;
-}
-
-vk::SurfaceTransformFlagBitsKHR SwapChain::getTransform() const
-{
-	return transform;
 }
 
 uint32_t SwapChain::getImageCount() const

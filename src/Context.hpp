@@ -20,7 +20,7 @@ private:
 	vk::Queue          graphics_queue{};
 	vk::Queue          present_queue{};
 
-	Window& window;
+	Window* window{};
 
 	QueueFamilyIndices queue_family_indices{};
 

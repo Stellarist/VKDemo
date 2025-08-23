@@ -10,7 +10,7 @@ private:
 	vk::Semaphore render_finished_semaphore;
 	vk::Fence     in_flight_fence;
 
-	Context& context;
+	Context* context;
 
 public:
 	SyncObjects(Context& context);

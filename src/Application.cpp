@@ -9,8 +9,7 @@ Application::Application() :
     swap_chain(window, context),
     render_pass(context, swap_chain),
     graphics_pipeline(context, render_pass),
-    command_pool(context),
-    command_buffer(context, swap_chain, render_pass, graphics_pipeline, command_pool),
+    command_manager(context, swap_chain, render_pass, graphics_pipeline),
     sync_objects(context)
 {
 }

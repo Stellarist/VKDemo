@@ -4,7 +4,7 @@
 #include <print>
 
 Context::Context(Window& window) :
-    window(window)
+    window(&window)
 {
 	createInstance();
 	createSurface();
@@ -42,7 +42,7 @@ void Context::createInstance()
 void Context::createSurface()
 {
 	VkSurfaceKHR csurface{};
-	if (!SDL_Vulkan_CreateSurface(window.get(), instance, nullptr, &csurface)) {
+	if (!SDL_Vulkan_CreateSurface(window->get(), instance, nullptr, &csurface)) {
 		std::println("Failed to create Vulkan surface: {}", SDL_GetError());
 		throw std::runtime_error("Vulkan surface creation failed");
 	}

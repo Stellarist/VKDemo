@@ -9,8 +9,7 @@
 #include "SwapChain.hpp"
 #include "RenderPass.hpp"
 #include "GraphicsPipeline.hpp"
-#include "CommandPool.hpp"
-#include "CommandBuffer.hpp"
+#include "CommandManager.hpp"
 #include "SyncObjects.hpp"
 
 class Application {
@@ -20,8 +19,7 @@ private:
 	SwapChain        swap_chain;
 	RenderPass       render_pass;
 	GraphicsPipeline graphics_pipeline;
-	CommandPool      command_pool;
-	CommandBuffer    command_buffer;
+	CommandManager   command_manager;
 	SyncObjects      sync_objects;
 
 public:

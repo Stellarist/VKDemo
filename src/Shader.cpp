@@ -2,30 +2,72 @@
 
 #include <fstream>
 
-Shader::Shader(const std::filesystem::path& filepath, Context& context) :
-    context(context)
+Shader::Shader(vk::Device device, std::string_view filename) :
+    device(device), filename(filename)
 {
-	std::ifstream file(filepath, std::ios::binary | std::ios::ate);
-	if (!file.is_open())
-		throw std::runtime_error("Failed to open shader file: " + filepath.string());
-
-	std::vector<std::byte> code(file.tellg());
-	file.seekg(0);
-	file.read(reinterpret_cast<char*>(code.data()), code.size());
-	if (file.fail())
-		throw std::runtime_error("Failed to read shader file: " + filepath.string());
-
-	vk::ShaderModuleCreateInfo create_info{};
-	create_info.setCodeSize(code.size())
-	    .setPCode(reinterpret_cast<const uint32_t*>(code.data()));
-	shader = context.getLogicalDevice().createShaderModule(create_info);
-	if (!shader)
-		throw std::runtime_error("Failed to create shader module");
+	read();
+	create();
 }
 
 Shader::~Shader()
 {
-	context.getLogicalDevice().destroyShaderModule(shader);
+	device.destroyShaderModule(shader);
+}
+
+void Shader::read()
+{
+	std::ifstream file(std::string(filename), std::ios::binary | std::ios::ate);
+	if (!file.is_open())
+		throw std::runtime_error("Failed to open shader file: " + filename);
+
+	codes.resize(file.tellg());
+	file.seekg(0);
+	file.read(reinterpret_cast<char*>(codes.data()), codes.size());
+	if (file.fail())
+		throw std::runtime_error("Failed to read shader file: " + filename);
+}
+
+void Shader::create()
+{
+	vk::ShaderModuleCreateInfo create_info{};
+	create_info.setCodeSize(codes.size())
+	    .setPCode(reinterpret_cast<const uint32_t*>(codes.data()));
+	shader = device.createShaderModule(create_info);
+	if (!shader)
+		throw std::runtime_error("Failed to create shader module: " + filename);
+}
+
+void Shader::setStage(vk::ShaderStageFlagBits stage, std::string_view entry)
+{
+	if (stages.contains(stage))
+		throw std::runtime_error("Shader stage already exists: " + std::to_string(static_cast<int>(stage)));
+
+	stages[stage] = entry;
+}
+
+vk::PipelineShaderStageCreateInfo Shader::getStage(vk::ShaderStageFlagBits stage) const
+{
+	auto it = stages.find(stage);
+	if (it == stages.end())
+		throw std::runtime_error("Shader stage not found: " + std::to_string(static_cast<int>(stage)));
+
+	vk::PipelineShaderStageCreateInfo stage_info{};
+	stage_info.setStage(stage)
+	    .setModule(shader)
+	    .setPName(it->second.c_str());
+
+	return stage_info;
+}
+
+std::vector<vk::PipelineShaderStageCreateInfo> Shader::getStages() const
+{
+	std::vector<vk::PipelineShaderStageCreateInfo> stage_infos;
+	stage_infos.reserve(stages.size());
+
+	for (const auto& [stage, entry] : stages)
+		stage_infos.push_back(getStage(stage));
+
+	return stage_infos;
 }
 
 vk::ShaderModule Shader::get() const
