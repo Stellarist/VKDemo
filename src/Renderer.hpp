@@ -10,9 +10,9 @@
 #include "RenderPass.hpp"
 #include "GraphicsPipeline.hpp"
 #include "CommandManager.hpp"
-#include "SyncObjects.hpp"
+#include "SyncManager.hpp"
 
-class Application {
+class Renderer {
 private:
 	Window           window;
 	Context          context;
@@ -20,10 +20,21 @@ private:
 	RenderPass       render_pass;
 	GraphicsPipeline graphics_pipeline;
 	CommandManager   command_manager;
-	SyncObjects      sync_objects;
+	SyncManager      sync_manager;
+
+	uint32_t image_index{};
+	uint32_t command_buffer_index{};
+	uint32_t wait_semaphore_index{};
+	uint32_t signal_semaphore_index{};
+	uint32_t fence_index{};
 
 public:
-	Application();
+	Renderer();
 
+	void begin();
+	void end();
+	void render();
+
+	// TODO: move window and other members to a separate class
 	void run();
 };

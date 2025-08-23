@@ -25,7 +25,7 @@ public:
 	RenderPass(Context& context, SwapChain& swap_chain);
 	~RenderPass();
 
-	void begin(vk::CommandBuffer command_buffer, uint32_t framebuffer_index, vk::Extent2D extent, std::span<const vk::ClearValue> clear_values);
+	void begin(vk::CommandBuffer command_buffer, uint32_t framebuffer_index, const vk::Extent2D& extent, const vk::ClearValue& color);
 	void end(vk::CommandBuffer command_buffer);
 	void next(vk::CommandBuffer command_buffer);
 

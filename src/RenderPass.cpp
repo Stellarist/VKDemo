@@ -73,13 +73,13 @@ void RenderPass::createFrameBuffers(std::span<const vk::ImageView> attachments, 
 	}
 }
 
-void RenderPass::begin(vk::CommandBuffer command_buffer, uint32_t framebuffer_index, vk::Extent2D extent, std::span<const vk::ClearValue> clear_values)
+void RenderPass::begin(vk::CommandBuffer command_buffer, uint32_t framebuffer_index, const vk::Extent2D& extent, const vk::ClearValue& color)
 {
 	vk::RenderPassBeginInfo begin_info{};
 	begin_info.setRenderPass(render_pass)
 	    .setFramebuffer(framebuffers[framebuffer_index])
 	    .setRenderArea({{0, 0}, extent})
-	    .setClearValues(clear_values);
+	    .setClearValues(color);
 
 	command_buffer.beginRenderPass(begin_info, vk::SubpassContents::eInline);
 }

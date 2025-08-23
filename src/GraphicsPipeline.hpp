@@ -10,7 +10,7 @@
 
 class SwapChain;
 class CommandBuffer;
-class SyncObjects;
+class SyncManager;
 
 struct PipelineConfig {
 	vk::PipelineVertexInputStateCreateInfo vertex_input{};
@@ -98,14 +98,15 @@ private:
 	RenderPass* render_pass;
 
 public:
-	GraphicsPipeline(Context& context, RenderPass& render_pass, Shader& shader);
+	GraphicsPipeline(Context& context, RenderPass& render_pass);
 	~GraphicsPipeline();
 
 	void create();
+	void bind(vk::CommandBuffer command_buffer);
 
 	vk::Pipeline       get() const;
 	vk::PipelineLayout getLayout() const;
 
 	void create(Shader& shader);
-	void render(SwapChain* swap_chain, CommandBuffer* command_buffer, SyncObjects* sync_objects);
+	void render(SwapChain* swap_chain, CommandBuffer* command_buffer, SyncManager* sync_objects);
 };
