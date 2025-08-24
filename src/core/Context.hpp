@@ -35,6 +35,16 @@ public:
 	Context(Window& window);
 	~Context();
 
+	void submit(vk::CommandBuffer                       ocommand,
+	            std::span<const vk::Semaphore>          wait_semaphores,
+	            std::span<const vk::Semaphore>          signal_semaphores,
+	            std::span<const vk::PipelineStageFlags> wait_stages,
+	            vk::Fence                               fence);
+	void present(vk::CommandBuffer                 command,
+	             std::span<const vk::Semaphore>    wait_semaphores,
+	             std::span<const vk::SwapchainKHR> swapchains,
+	             std::span<const uint32_t>         image_indices);
+
 	vk::Instance       getInstance() const;
 	vk::SurfaceKHR     getSurface() const;
 	vk::PhysicalDevice getPhysicalDevice() const;

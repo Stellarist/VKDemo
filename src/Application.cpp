@@ -19,9 +19,7 @@ void Application::run()
 		float delta_time = static_cast<float>(current_tick - last_tick) / 1000.0f;
 		last_tick = current_tick;
 
-		renderer.begin();
 		renderer.render();
-		renderer.end();
 
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) {

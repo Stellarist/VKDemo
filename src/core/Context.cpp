@@ -121,6 +121,35 @@ QueueFamilyIndices Context::queryQueueFamilyIndices() const
 	return queue_family_indices;
 }
 
+void Context::submit(vk::CommandBuffer                       command,
+                     std::span<const vk::Semaphore>          wait_semaphores,
+                     std::span<const vk::Semaphore>          signal_semaphores,
+                     std::span<const vk::PipelineStageFlags> wait_stages,
+                     vk::Fence                               fence)
+{
+	vk::SubmitInfo submit_info{};
+	submit_info.setCommandBuffers(command)
+	    .setWaitSemaphores(wait_semaphores)
+	    .setSignalSemaphores(signal_semaphores)
+	    .setWaitDstStageMask(wait_stages);
+
+	graphics_queue.submit(submit_info, fence);
+}
+
+void Context::present(vk::CommandBuffer                 command,
+                      std::span<const vk::Semaphore>    wait_semaphores,
+                      std::span<const vk::SwapchainKHR> swap_chains,
+                      std::span<const uint32_t>         image_indices)
+{
+	vk::PresentInfoKHR present_info{};
+	present_info.setImageIndices(image_indices)
+	    .setSwapchains(swap_chains)
+	    .setWaitSemaphores(wait_semaphores);
+
+	if (present_queue.presentKHR(present_info) != vk::Result::eSuccess)
+		std::println("Failed to present swap chain image");
+}
+
 vk::Instance Context::getInstance() const
 {
 	return instance;

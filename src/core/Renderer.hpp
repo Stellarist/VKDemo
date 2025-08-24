@@ -31,13 +31,14 @@ struct Renderer {
 	std::unique_ptr<SyncManager>      sync_manager;
 
 	std::unique_ptr<Buffer> vertex_buffer;
+	std::unique_ptr<Buffer> host_buffer;
+	std::unique_ptr<Buffer> device_buffer;
 
 	Frame frame;
 
 	Renderer(Window& window);
 
-	void begin();
-	void end();
 	void render();
+	void draw();
 	void wait();
 };
