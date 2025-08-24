@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Window.hpp"
-#include "Renderer.hpp"
+#include "core/Renderer.hpp"
 
 class Application {
 private:
