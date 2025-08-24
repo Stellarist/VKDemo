@@ -11,6 +11,7 @@
 #include "GraphicsPipeline.hpp"
 #include "CommandManager.hpp"
 #include "SyncManager.hpp"
+#include "Widget.hpp"
 
 class Renderer {
 private:
@@ -21,6 +22,7 @@ private:
 	GraphicsPipeline graphics_pipeline;
 	CommandManager   command_manager;
 	SyncManager      sync_manager;
+	Widget           widget;
 
 	uint32_t image_index{};
 	uint32_t command_buffer_index{};

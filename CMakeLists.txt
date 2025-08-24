@@ -18,6 +18,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/shaders PREFIX "Shader Files" FILE
 
 find_package(Vulkan REQUIRED)
 find_package(SDL3 REQUIRED)
+find_package(imgui REQUIRED)
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
 add_executable(VKDemo
@@ -28,6 +29,7 @@ add_executable(VKDemo
 target_link_libraries(VKDemo
 	Vulkan::Vulkan
 	SDL3::SDL3
+	imgui::imgui
 )
 
 add_custom_target(compile_shaders

@@ -14,7 +14,8 @@ Renderer::Renderer() :
     render_pass(context, swap_chain),
     graphics_pipeline(context, render_pass),
     command_manager(context),
-    sync_manager(context)
+    sync_manager(context),
+    widget(window, context, render_pass)
 {}
 
 void Renderer::run()
