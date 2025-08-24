@@ -24,7 +24,6 @@ struct Frame {
 
 class Renderer {
 private:
-	Window           window;
 	Context          context;
 	SwapChain        swap_chain;
 	RenderPass       render_pass;
@@ -37,12 +36,10 @@ private:
 	Buffer vertex_buffer;
 
 public:
-	Renderer();
+	Renderer(Window& window);
 
 	void begin();
 	void end();
 	void render();
-
-	// TODO: move window and other members to a separate class
-	void run();
+	void wait();
 };

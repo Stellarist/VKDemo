@@ -5,17 +5,13 @@
 #include <vulkan/vulkan.hpp>
 #include <glm/glm.hpp>
 
-constexpr int SCR_WIDTH = 2560;
-constexpr int SCR_HEIGHT = 1440;
-
 constexpr std::array vertices = {
     glm::vec3(0.0, -0.5, 0.0),
     glm::vec3(-0.5, 0.5, 0.0),
     glm::vec3(0.5, 0.5, 0.0),
 };
 
-Renderer::Renderer() :
-    window("VKDemo", SCR_WIDTH, SCR_HEIGHT),
+Renderer::Renderer(Window& window) :
     context(window),
     swap_chain(window, context),
     render_pass(context, swap_chain),
@@ -32,37 +28,6 @@ Renderer::Renderer() :
 	frame.wait_semaphore_index = sync_manager.allocateSemaphores(2).first;
 	frame.signal_semaphore_index = frame.wait_semaphore_index + 1;
 	frame.fence_index = sync_manager.allocateFences(2).first;
-}
-
-void Renderer::run()
-{
-	bool should_close = false;
-	while (!should_close) {
-		static uint64_t last_tick{}, current_tick{};
-		current_tick = SDL_GetTicks();
-		float delta_time = static_cast<float>(current_tick - last_tick) / 1000.0f;
-		last_tick = current_tick;
-
-		begin();
-		render();
-		end();
-
-		SDL_Event event;
-		while (SDL_PollEvent(&event)) {
-			switch (event.type) {
-			case SDL_EventType::SDL_EVENT_QUIT:
-				should_close = true;
-				break;
-			case SDL_EventType::SDL_EVENT_KEY_DOWN:
-				if (event.key.key == SDLK_ESCAPE) {
-					should_close = true;
-					break;
-				}
-			}
-		}
-
-		context.getLogicalDevice().waitIdle();
-	}
 }
 
 void Renderer::begin()
@@ -130,4 +95,9 @@ void Renderer::render()
 {
 	auto command = command_manager.getBuffer(frame.command_buffer_index);
 	command.draw(3, 1, 0, 0);
+}
+
+void Renderer::wait()
+{
+	context.getLogicalDevice().waitIdle();
 }
