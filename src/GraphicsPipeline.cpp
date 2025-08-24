@@ -5,7 +5,7 @@
 GraphicsPipeline::GraphicsPipeline(Context& context, RenderPass& render_pass) :
     context(&context),
     render_pass(&render_pass),
-    shader(context.getLogicalDevice(), SHADER_DIR "/default.spv")
+    shader(context, SHADER_DIR "/default.spv")
 
 {
 	shader.setStage(vk::ShaderStageFlagBits::eVertex, "vertexMain");

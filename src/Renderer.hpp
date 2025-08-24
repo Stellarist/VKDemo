@@ -12,6 +12,16 @@
 #include "CommandManager.hpp"
 #include "SyncManager.hpp"
 
+#include "Buffer.hpp"
+
+struct Frame {
+	uint32_t image_index{};
+	uint32_t wait_semaphore_index{};
+	uint32_t signal_semaphore_index{};
+	uint32_t fence_index{};
+	uint32_t command_buffer_index{};
+};
+
 class Renderer {
 private:
 	Window           window;
@@ -22,11 +32,9 @@ private:
 	CommandManager   command_manager;
 	SyncManager      sync_manager;
 
-	uint32_t image_index{};
-	uint32_t command_buffer_index{};
-	uint32_t wait_semaphore_index{};
-	uint32_t signal_semaphore_index{};
-	uint32_t fence_index{};
+	Frame frame;
+
+	Buffer vertex_buffer;
 
 public:
 	Renderer();

@@ -1,11 +1,12 @@
 {
-	"dependencies": [
-		"vulkan",
-		{
-			"name": "sdl3",
-			"features": [
-				"vulkan"
-			]
-		}
-	]
+  "dependencies": [
+    {
+      "name": "sdl3",
+      "features": [
+        "vulkan"
+      ]
+    },
+    "vulkan",
+    "glm"
+  ]
 }
