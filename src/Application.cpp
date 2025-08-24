@@ -5,7 +5,8 @@ constexpr int SCR_HEIGHT = 1440;
 
 Application::Application() :
     window("VKDemo", SCR_WIDTH, SCR_HEIGHT),
-    renderer(window)
+    renderer(window),
+    widget(window, renderer.context, renderer.render_pass)
 {
 }
 

@@ -11,7 +11,6 @@
 #include "GraphicsPipeline.hpp"
 #include "CommandManager.hpp"
 #include "SyncManager.hpp"
-#include "Widget.hpp"
 
 #include "Buffer.hpp"
 
@@ -23,21 +22,18 @@ struct Frame {
 	uint32_t command_buffer_index{};
 };
 
-class Renderer {
-private:
+struct Renderer {
 	Context          context;
 	SwapChain        swap_chain;
 	RenderPass       render_pass;
 	GraphicsPipeline graphics_pipeline;
 	CommandManager   command_manager;
 	SyncManager      sync_manager;
-	Widget           widget;
 
 	Frame frame;
 
 	Buffer vertex_buffer;
 
-public:
 	Renderer(Window& window);
 
 	void begin();
