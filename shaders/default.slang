@@ -1,16 +1,21 @@
 struct VSInput {
-    float3 position : POSITION;
+    float3 pos : POSITION;
+    float3 normal : NORMAL;
+    float2 uv : TEXCOORD;
+    float4 color : COLOR;
 };
 
 struct VSOutput {
     float4 position : SV_POSITION;
+    float4 color : COLOR;
 };
 
 [shader("vertex")]
-VSOutput vertexMain(VSInput input, uint vertex_id : SV_VertexID)
+VSOutput vertexMain(VSInput input)
 {
     VSOutput output;
-    output.position = float4(input.position, 1.0);
+    output.position = float4(input.pos, 1.0);
+    output.color = input.color;
 
     return output;
 }
@@ -18,5 +23,5 @@ VSOutput vertexMain(VSInput input, uint vertex_id : SV_VertexID)
 [shader("fragment")]
 float4 fragmentMain(VSOutput input) 
 {
-    return (input.position);
+    return input.color;
 }

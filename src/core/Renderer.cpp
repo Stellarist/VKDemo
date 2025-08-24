@@ -8,9 +8,9 @@
 #include "Mesh.hpp"
 
 constexpr std::array<Vertex, 3> vertices = {
-    Vertex{glm::vec3(0.0, -0.5, 0.0)},
-    Vertex{glm::vec3(-0.5, 0.5, 0.0)},
-    Vertex{glm::vec3(0.5, 0.5, 0.0)},
+    Vertex{glm::vec3(0.0, -0.5, 0.0), glm::vec3(0.0, 0.0, -1.0), glm::vec2(0.0, 0.0), glm::vec4(1.0, 0.0, 0.0, 1.0)},
+    Vertex{glm::vec3(-0.5, 0.5, 0.0), glm::vec3(0.0, 0.0, -1.0), glm::vec2(0.0, 1.0), glm::vec4(0.0, 1.0, 0.0, 1.0)},
+    Vertex{glm::vec3(0.5, 0.5, 0.0), glm::vec3(0.0, 0.0, -1.0), glm::vec2(1.0, 1.0), glm::vec4(0.0, 0.0, 1.0, 1.0)},
 };
 
 Renderer::Renderer(Window& window)
