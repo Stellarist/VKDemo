@@ -10,8 +10,8 @@ struct Vertex {
 	glm::vec2 uv;
 	glm::vec4 color;
 
-	static constexpr vk::VertexInputBindingDescription                binding();
-	static constexpr std::vector<vk::VertexInputAttributeDescription> attributes();
+	static vk::VertexInputBindingDescription                binding();
+	static std::vector<vk::VertexInputAttributeDescription> attributes();
 };
 
 struct Index {

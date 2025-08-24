@@ -1,16 +1,35 @@
 #include "GraphicsPipeline.hpp"
 
 #include "Shader.hpp"
+#include "Mesh.hpp"
 
 GraphicsPipeline::GraphicsPipeline(Context& context, RenderPass& render_pass) :
     context(&context),
     render_pass(&render_pass),
     shader(context, SHADER_DIR "/default.spv")
-
 {
 	shader.setStage(vk::ShaderStageFlagBits::eVertex, "vertexMain");
 	shader.setStage(vk::ShaderStageFlagBits::eFragment, "fragmentMain");
-	create();
+
+	auto binding = Vertex::binding();
+	auto attributes = Vertex::attributes();
+
+	PipelineConfig config{};
+	config.vertex_input.setVertexBindingDescriptions(binding)
+	    .setVertexAttributeDescriptions(attributes);
+
+	create(config);
+}
+
+GraphicsPipeline::GraphicsPipeline(Context& context, RenderPass& render_pass, const PipelineConfig& config) :
+    context(&context),
+    render_pass(&render_pass),
+    shader(context, SHADER_DIR "/default.spv")
+{
+	shader.setStage(vk::ShaderStageFlagBits::eVertex, "vertexMain");
+	shader.setStage(vk::ShaderStageFlagBits::eFragment, "fragmentMain");
+
+	create(config);
 }
 
 GraphicsPipeline::~GraphicsPipeline()
@@ -19,7 +38,7 @@ GraphicsPipeline::~GraphicsPipeline()
 	context->getLogicalDevice().destroyPipelineLayout(pipeline_layout);
 }
 
-void GraphicsPipeline::create()
+void GraphicsPipeline::create(const PipelineConfig& config)
 {
 	auto stages = shader.getStages();
 
@@ -55,4 +74,9 @@ vk::Pipeline GraphicsPipeline::get() const
 vk::PipelineLayout GraphicsPipeline::getLayout() const
 {
 	return pipeline_layout;
+}
+
+Shader& GraphicsPipeline::getShader()
+{
+	return shader;
 }

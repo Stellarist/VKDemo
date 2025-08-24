@@ -87,21 +87,23 @@ private:
 	vk::Pipeline       pipeline;
 	vk::PipelineLayout pipeline_layout;
 
-	Shader         shader;
-	PipelineConfig config;
+	Shader shader;
 
 	Context*    context{};
 	RenderPass* render_pass{};
 
 public:
 	GraphicsPipeline(Context& context, RenderPass& render_pass);
+	GraphicsPipeline(Context& context, RenderPass& render_pass, const PipelineConfig& config);
 	~GraphicsPipeline();
 
-	void create();
+	void create(const PipelineConfig& config);
 	void bind(vk::CommandBuffer command_buffer);
 
 	vk::Pipeline       get() const;
 	vk::PipelineLayout getLayout() const;
+
+	Shader& getShader();
 
 	void create(Shader& shader);
 };

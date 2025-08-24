@@ -65,6 +65,11 @@ void Buffer::upload(void* src, size_t src_size, size_t dst_offset)
 	unmap();
 }
 
+vk::Buffer Buffer::get() const
+{
+	return buffer;
+}
+
 MemoryInfo Buffer::queryMemoryInfo(vk::MemoryPropertyFlags prop_flags) const
 {
 	MemoryInfo info{};

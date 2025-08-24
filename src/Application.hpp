@@ -8,7 +8,7 @@ class Application {
 private:
 	Window   window;
 	Renderer renderer;
-	Widget   widget;
+	// Widget   widget;
 
 public:
 	Application();

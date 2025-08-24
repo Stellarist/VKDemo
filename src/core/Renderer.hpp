@@ -23,16 +23,16 @@ struct Frame {
 };
 
 struct Renderer {
-	Context          context;
-	SwapChain        swap_chain;
-	RenderPass       render_pass;
-	GraphicsPipeline graphics_pipeline;
-	CommandManager   command_manager;
-	SyncManager      sync_manager;
+	std::unique_ptr<Context>          context;
+	std::unique_ptr<SwapChain>        swap_chain;
+	std::unique_ptr<RenderPass>       render_pass;
+	std::unique_ptr<GraphicsPipeline> graphics_pipeline;
+	std::unique_ptr<CommandManager>   command_manager;
+	std::unique_ptr<SyncManager>      sync_manager;
+
+	std::unique_ptr<Buffer> vertex_buffer;
 
 	Frame frame;
-
-	Buffer vertex_buffer;
 
 	Renderer(Window& window);
 

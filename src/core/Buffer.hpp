@@ -21,6 +21,8 @@ private:
 
 	Context* context{};
 
+	MemoryInfo queryMemoryInfo(vk::MemoryPropertyFlags properties) const;
+
 public:
 	Buffer(Context& context, uint32_t size, vk::BufferUsageFlagBits usage, vk::MemoryPropertyFlags properties);
 	~Buffer();
@@ -33,5 +35,5 @@ public:
 	void copy(void* src, size_t copy_size);
 	void upload(void* src, size_t src_size, size_t dst_offset = 0);
 
-	MemoryInfo queryMemoryInfo(vk::MemoryPropertyFlags properties) const;
+	vk::Buffer get() const;
 };
