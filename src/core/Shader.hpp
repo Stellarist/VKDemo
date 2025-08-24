@@ -4,19 +4,21 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include "Context.hpp"
+
 class Shader {
 private:
 	vk::ShaderModule shader;
-	vk::Device       device;
 
-	std::string filename;
-
+	std::string            name;
 	std::vector<std::byte> codes;
 
 	std::unordered_map<vk::ShaderStageFlagBits, std::string> stages;
 
+	Context* context{};
+
 public:
-	Shader(vk::Device device, std::string_view filename);
+	Shader(Context& context, std::string_view filename);
 	~Shader();
 
 	void read();

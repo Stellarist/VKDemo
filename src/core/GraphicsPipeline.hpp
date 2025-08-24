@@ -8,10 +8,6 @@
 #include "RenderPass.hpp"
 #include "Shader.hpp"
 
-class SwapChain;
-class CommandBuffer;
-class SyncManager;
-
 struct PipelineConfig {
 	vk::PipelineVertexInputStateCreateInfo vertex_input{};
 
@@ -94,8 +90,8 @@ private:
 	Shader         shader;
 	PipelineConfig config;
 
-	Context*    context;
-	RenderPass* render_pass;
+	Context*    context{};
+	RenderPass* render_pass{};
 
 public:
 	GraphicsPipeline(Context& context, RenderPass& render_pass);
@@ -108,5 +104,4 @@ public:
 	vk::PipelineLayout getLayout() const;
 
 	void create(Shader& shader);
-	void render(SwapChain* swap_chain, CommandBuffer* command_buffer, SyncManager* sync_objects);
 };

@@ -1,11 +1,11 @@
-#include "Renderer.hpp"
+#include "Application.hpp"
 
 #include <print>
 
 int main(int argc, char** argv)
 {
 	try {
-		Renderer().run();
+		Application().run();
 	} catch (const std::exception& e) {
 		std::println("Error: {}", e.what());
 	}

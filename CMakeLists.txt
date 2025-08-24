@@ -8,9 +8,9 @@ add_compile_definitions(SCRIPTS_DIR="${CMAKE_SOURCE_DIR}/scripts")
 
 include_directories(src)
 
-file(GLOB INC_LIST src/*.hpp)
-file(GLOB SRC_LIST src/*.cpp)
-file(GLOB SHADER_LIST shaders/*.slang)
+file(GLOB_RECURSE INC_LIST src/*.hpp)
+file(GLOB_RECURSE SRC_LIST src/*.cpp)
+file(GLOB_RECURSE SHADER_LIST shaders/*.slang)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "Source Files" FILES ${SRC_LIST})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "Header Files" FILES ${INC_LIST})
@@ -18,6 +18,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/shaders PREFIX "Shader Files" FILE
 
 find_package(Vulkan REQUIRED)
 find_package(SDL3 REQUIRED)
+find_package(glm REQUIRED)
 find_package(imgui REQUIRED)
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
@@ -29,6 +30,7 @@ add_executable(VKDemo
 target_link_libraries(VKDemo
 	Vulkan::Vulkan
 	SDL3::SDL3
+	glm::glm
 	imgui::imgui
 )
 

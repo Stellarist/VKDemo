@@ -6,10 +6,11 @@
 
 class CommandManager {
 private:
-	vk::CommandPool                command_pool;
+	vk::CommandPool command_pool;
+
 	std::vector<vk::CommandBuffer> command_buffers;
 
-	Context* context;
+	Context* context{};
 
 	void createPool();
 
@@ -17,8 +18,8 @@ public:
 	CommandManager(Context& context);
 	~CommandManager();
 
-	std::pair<vk::CommandBuffer, uint32_t>            allocateBuffer();
-	std::pair<std::span<vk::CommandBuffer>, uint32_t> allocateBuffers(uint32_t count);
+	uint32_t                      allocateBuffer();
+	std::pair<uint32_t, uint32_t> allocateBuffers(uint32_t count);
 
 	void freeBuffer(vk::CommandBuffer buffer);
 	void freeBuffers(std::span<vk::CommandBuffer> buffers);

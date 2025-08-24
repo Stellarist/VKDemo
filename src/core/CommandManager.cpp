@@ -20,16 +20,15 @@ void CommandManager::createPool()
 	command_pool = context->getLogicalDevice().createCommandPool(pool_info);
 }
 
-std::pair<vk::CommandBuffer, uint32_t> CommandManager::allocateBuffer()
+uint32_t CommandManager::allocateBuffer()
 {
-	auto [buffer, index] = allocateBuffers(1);
-	return {buffer.front(), index};
+	return allocateBuffers(1).first;
 }
 
-std::pair<std::span<vk::CommandBuffer>, uint32_t> CommandManager::allocateBuffers(uint32_t count)
+std::pair<uint32_t, uint32_t> CommandManager::allocateBuffers(uint32_t count)
 {
-	size_t buffer_size = command_buffers.size();
-	command_buffers.reserve(buffer_size + count);
+	uint32_t start = command_buffers.size();
+	command_buffers.reserve(start + count);
 
 	vk::CommandBufferAllocateInfo alloc_info{};
 	alloc_info.setCommandPool(command_pool)
@@ -38,9 +37,9 @@ std::pair<std::span<vk::CommandBuffer>, uint32_t> CommandManager::allocateBuffer
 
 	std::vector<vk::CommandBuffer> buffers{};
 	buffers = context->getLogicalDevice().allocateCommandBuffers(alloc_info);
-	std::move(buffers.begin(), buffers.end(), std::back_inserter(command_buffers));
+	command_buffers.insert(command_buffers.end(), buffers.begin(), buffers.end());
 
-	return {{command_buffers.data() + buffer_size, count}, buffer_size};
+	return {start, command_buffers.size()};
 }
 
 void CommandManager::freeBuffer(vk::CommandBuffer buffer)

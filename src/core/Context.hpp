@@ -13,21 +13,23 @@ struct QueueFamilyIndices {
 
 class Context {
 private:
-	vk::Instance       instance{};
-	vk::SurfaceKHR     surface{};
-	vk::PhysicalDevice physical_device{};
-	vk::Device         logical_device{};
-	vk::Queue          graphics_queue{};
-	vk::Queue          present_queue{};
+	vk::Instance       instance;
+	vk::SurfaceKHR     surface;
+	vk::PhysicalDevice physical_device;
+	vk::Device         logical_device;
+	vk::Queue          graphics_queue;
+	vk::Queue          present_queue;
 
 	Window* window{};
 
-	QueueFamilyIndices queue_family_indices{};
+	QueueFamilyIndices queue_family_indices;
 
 	void createInstance();
 	void createSurface();
 	void pickPhysicalDevice();
 	void createLogicalDevice();
+
+	QueueFamilyIndices queryQueueFamilyIndices() const;
 
 public:
 	Context(Window& window);

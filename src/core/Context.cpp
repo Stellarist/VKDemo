@@ -66,19 +66,7 @@ void Context::pickPhysicalDevice()
 
 void Context::createLogicalDevice()
 {
-	auto properties = physical_device.getQueueFamilyProperties();
-	for (int i = 0; i < properties.size(); i++) {
-		const auto& property = properties[i];
-
-		if (property.queueFlags & vk::QueueFlagBits::eGraphics)
-			queue_family_indices.graphics_family = i;
-
-		if (physical_device.getSurfaceSupportKHR(i, surface))
-			queue_family_indices.present_family = i;
-
-		if (queue_family_indices)
-			break;
-	}
+	queue_family_indices = queryQueueFamilyIndices();
 
 	std::array layers = {"VK_LAYER_KHRONOS_validation"};
 	std::array extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
@@ -110,6 +98,27 @@ void Context::createLogicalDevice()
 
 	graphics_queue = logical_device.getQueue(queue_family_indices.graphics_family.value(), 0);
 	present_queue = logical_device.getQueue(queue_family_indices.present_family.value(), 0);
+}
+
+QueueFamilyIndices Context::queryQueueFamilyIndices() const
+{
+	QueueFamilyIndices queue_family_indices;
+
+	auto properties = physical_device.getQueueFamilyProperties();
+	for (int i = 0; i < properties.size(); i++) {
+		const auto& property = properties[i];
+
+		if (property.queueFlags & vk::QueueFlagBits::eGraphics)
+			queue_family_indices.graphics_family = i;
+
+		if (physical_device.getSurfaceSupportKHR(i, surface))
+			queue_family_indices.present_family = i;
+
+		if (queue_family_indices)
+			break;
+	}
+
+	return queue_family_indices;
 }
 
 vk::Instance Context::getInstance() const

@@ -2,8 +2,8 @@
 
 #include <fstream>
 
-Shader::Shader(vk::Device device, std::string_view filename) :
-    device(device), filename(filename)
+Shader::Shader(Context& context, std::string_view filename) :
+    context(&context), name(filename)
 {
 	read();
 	create();
@@ -11,20 +11,20 @@ Shader::Shader(vk::Device device, std::string_view filename) :
 
 Shader::~Shader()
 {
-	device.destroyShaderModule(shader);
+	context->getLogicalDevice().destroyShaderModule(shader);
 }
 
 void Shader::read()
 {
-	std::ifstream file(std::string(filename), std::ios::binary | std::ios::ate);
+	std::ifstream file(std::string(name), std::ios::binary | std::ios::ate);
 	if (!file.is_open())
-		throw std::runtime_error("Failed to open shader file: " + filename);
+		throw std::runtime_error("Failed to open shader file: " + name);
 
 	codes.resize(file.tellg());
 	file.seekg(0);
 	file.read(reinterpret_cast<char*>(codes.data()), codes.size());
 	if (file.fail())
-		throw std::runtime_error("Failed to read shader file: " + filename);
+		throw std::runtime_error("Failed to read shader file: " + name);
 }
 
 void Shader::create()
@@ -32,9 +32,9 @@ void Shader::create()
 	vk::ShaderModuleCreateInfo create_info{};
 	create_info.setCodeSize(codes.size())
 	    .setPCode(reinterpret_cast<const uint32_t*>(codes.data()));
-	shader = device.createShaderModule(create_info);
+	shader = context->getLogicalDevice().createShaderModule(create_info);
 	if (!shader)
-		throw std::runtime_error("Failed to create shader module: " + filename);
+		throw std::runtime_error("Failed to create shader module: " + name);
 }
 
 void Shader::setStage(vk::ShaderStageFlagBits stage, std::string_view entry)

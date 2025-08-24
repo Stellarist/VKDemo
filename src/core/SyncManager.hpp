@@ -15,8 +15,11 @@ public:
 	SyncManager(Context& context);
 	~SyncManager();
 
-	std::pair<vk::Semaphore, uint32_t> allocateSemaphore();
-	std::pair<vk::Fence, uint32_t>     allocateFence();
+	uint32_t                      allocateSemaphore();
+	std::pair<uint32_t, uint32_t> allocateSemaphores(uint32_t count);
+
+	uint32_t                      allocateFence();
+	std::pair<uint32_t, uint32_t> allocateFences(uint32_t count);
 
 	vk::Semaphore getSemaphore(uint32_t index);
 	vk::Fence     getFence(uint32_t index);
@@ -26,4 +29,7 @@ public:
 
 	void resetFence(vk::Fence fence);
 	void resetFences(std::span<const vk::Fence> fences);
+
+	uint32_t semaphoreCount() const;
+	uint32_t fenceCount() const;
 };
