@@ -13,6 +13,3 @@ struct Vertex {
 	static vk::VertexInputBindingDescription                binding();
 	static std::vector<vk::VertexInputAttributeDescription> attributes();
 };
-
-struct Index {
-};

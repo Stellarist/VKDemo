@@ -7,11 +7,14 @@
 #include "SyncManager.hpp"
 #include "Mesh.hpp"
 
-constexpr std::array<Vertex, 3> vertices = {
-    Vertex{glm::vec3(0.0, -0.5, 0.0), glm::vec3(0.0, 0.0, -1.0), glm::vec2(0.0, 0.0), glm::vec4(1.0, 1.0, .0, 1.0)},
-    Vertex{glm::vec3(-0.5, 0.5, 0.0), glm::vec3(0.0, 0.0, -1.0), glm::vec2(0.0, 1.0), glm::vec4(0.0, 1.0, 1.0, 1.0)},
-    Vertex{glm::vec3(0.5, 0.5, 0.0), glm::vec3(0.0, 0.0, -1.0), glm::vec2(1.0, 1.0), glm::vec4(1.0, 0.0, 1.0, 1.0)},
+constexpr std::array<Vertex, 4> vertices = {
+    Vertex{{-0.5, -0.5, 0.0}, {0.0, 0.0, -1.0}, {0.0, 0.0}, {1.0, 0.0, 0.0, 1.0}},
+    Vertex{{-0.5, 0.5, 0.0}, {0.0, 0.0, -1.0}, {0.0, 1.0}, {1.0, 1.0, 0.0, 1.0}},
+    Vertex{{0.5, 0.5, 0.0}, {0.0, 0.0, -1.0}, {1.0, 1.0}, {0.0, 0.0, 1.0, 1.0}},
+    Vertex{{0.5, -0.5, 0.0}, {0.0, 0.0, -1.0}, {1.0, 0.0}, {0.0, 1.0, 0.0, 1.0}},
 };
+
+constexpr std::array<uint32_t, 6> indices = {0, 1, 2, 2, 3, 0};
 
 Renderer::Renderer(Window& window)
 {
@@ -23,11 +26,20 @@ Renderer::Renderer(Window& window)
 	staging_buffer = std::make_unique<Buffer>(*context, sizeof(vertices),
 	                                          vk::BufferUsageFlagBits::eTransferSrc,
 	                                          vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+	staging_buffer->upload(static_cast<void*>(const_cast<Vertex*>(vertices.data())), sizeof(vertices));
 	vertex_buffer = std::make_unique<Buffer>(*context, sizeof(vertices),
 	                                         vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst,
 	                                         vk::MemoryPropertyFlagBits::eDeviceLocal);
-	staging_buffer->upload(static_cast<void*>(const_cast<Vertex*>(vertices.data())), vertices.size() * sizeof(Vertex));
 	vertex_buffer->copyFrom(staging_buffer->get(), sizeof(vertices));
+
+	staging_buffer = std::make_unique<Buffer>(*context, sizeof(vertices),
+	                                          vk::BufferUsageFlagBits::eTransferSrc,
+	                                          vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+	staging_buffer->upload(static_cast<void*>(const_cast<uint32_t*>(indices.data())), sizeof(indices));
+	index_buffer = std::make_unique<Buffer>(*context, sizeof(indices),
+	                                        vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
+	                                        vk::MemoryPropertyFlagBits::eDeviceLocal);
+	index_buffer->copyFrom(staging_buffer->get(), sizeof(indices));
 
 	frame.command_buffer_index = context->getCommandManager().allocateBuffer();
 	frame.wait_semaphore_index = context->getSyncManager().allocateSemaphores(2).first;
@@ -86,7 +98,8 @@ void Renderer::draw()
 
 	command.bindPipeline(vk::PipelineBindPoint::eGraphics, graphics_pipeline->get());
 	command.bindVertexBuffers(0, vertex_buffer->get(), {0});
-	command.draw(vertices.size(), 1, 0, 0);
+	command.bindIndexBuffer(index_buffer->get(), 0, vk::IndexType::eUint32);
+	command.drawIndexed(indices.size(), 1, 0, 0, 0);
 }
 
 void Renderer::wait()
