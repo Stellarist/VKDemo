@@ -18,3 +18,13 @@ std::vector<vk::VertexInputAttributeDescription> Vertex::attributes()
 	    {3, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(Vertex, color)},
 	};
 }
+
+vk::DescriptorSetLayoutBinding Transform::binding()
+{
+	return {
+	    0,
+	    vk::DescriptorType::eUniformBuffer,
+	    1,
+	    vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+	};
+}

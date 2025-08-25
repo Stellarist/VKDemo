@@ -29,11 +29,9 @@ void Window::pollEvents()
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
-		case SDL_EventType::SDL_EVENT_QUIT:
-			should_close = true;
-			break;
 		case SDL_EventType::SDL_EVENT_KEY_DOWN:
-			should_close = true;
+			if (event.key.key == SDLK_ESCAPE)
+				should_close = true;
 			break;
 		}
 	}

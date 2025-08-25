@@ -1,6 +1,7 @@
 #include <set>
 #include <print>
 
+#include "DescriptorManager.hpp"
 #include "CommandManager.hpp"
 #include "SyncManager.hpp"
 
@@ -12,6 +13,7 @@ Context::Context(Window& window) :
 	pickPhysicalDevice();
 	createLogicalDevice();
 
+	descriptor_manager = std::make_unique<DescriptorManager>(*this);
 	command_manager = std::make_unique<CommandManager>(*this);
 	sync_manager = std::make_unique<SyncManager>(*this);
 }
@@ -20,6 +22,7 @@ Context::~Context()
 {
 	sync_manager.reset();
 	command_manager.reset();
+	descriptor_manager.reset();
 	logical_device.destroy();
 	instance.destroySurfaceKHR(surface);
 	instance.destroy();
@@ -129,18 +132,43 @@ QueueFamilyIndices Context::queryQueueFamilyIndices() const
 
 void Context::execute(std::function<void(vk::CommandBuffer)> func)
 {
-	auto command_buffer = command_manager->getBuffer(command_manager->allocateBuffer());
+	auto command_buffer = command_manager->allocateBuffer();
+
 	command_manager->begin(command_buffer);
 	func(command_buffer);
 	command_manager->end(command_buffer);
-	command_manager->submit(command_buffer);
-	wait();
+
+	submit(command_buffer);
+	logical_device.waitIdle();
 	command_manager->freeBuffer(command_buffer);
 }
 
-void Context::wait()
+void Context::submit(vk::CommandBuffer                       command,
+                     std::span<const vk::Semaphore>          wait_semaphores,
+                     std::span<const vk::Semaphore>          signal_semaphores,
+                     std::span<const vk::PipelineStageFlags> wait_stages,
+                     vk::Fence                               fence)
 {
-	logical_device.waitIdle();
+	vk::SubmitInfo submit_info{};
+	submit_info.setCommandBuffers(command)
+	    .setWaitSemaphores(wait_semaphores)
+	    .setSignalSemaphores(signal_semaphores)
+	    .setWaitDstStageMask(wait_stages);
+
+	graphics_queue.submit(submit_info, fence);
+}
+
+void Context::present(std::span<const uint32_t>         image_indices,
+                      std::span<const vk::SwapchainKHR> swap_chains,
+                      std::span<const vk::Semaphore>    wait_semaphores)
+{
+	vk::PresentInfoKHR present_info{};
+	present_info.setImageIndices(image_indices)
+	    .setSwapchains(swap_chains)
+	    .setWaitSemaphores(wait_semaphores);
+
+	if (present_queue.presentKHR(present_info) != vk::Result::eSuccess)
+		throw std::runtime_error("Failed to present swap chain image");
 }
 
 vk::Instance Context::getInstance() const
@@ -171,6 +199,11 @@ vk::Queue Context::getGraphicsQueue() const
 vk::Queue Context::getPresentQueue() const
 {
 	return present_queue;
+}
+
+DescriptorManager& Context::getDescriptorManager() const
+{
+	return *descriptor_manager;
 }
 
 CommandManager& Context::getCommandManager() const

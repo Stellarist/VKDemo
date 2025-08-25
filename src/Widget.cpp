@@ -4,22 +4,26 @@
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_vulkan.h>
 
+#include "core/DescriptorManager.hpp"
+
 Widget::Widget(Window& window, Context& context, RenderPass& render_pass)
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
 
-	if (!ImGui_ImplSDL3_InitForVulkan(window.get()))
+	if (!ImGui_ImplSDL3_InitForVulkan(window.get())) {
+		ImGui::DestroyContext();
 		throw std::runtime_error("Failed to initialize ImGui SDL3 backend");
+	}
 
 	ImGui_ImplVulkan_InitInfo init_info{
 	    .Instance = context.getInstance(),
 	    .PhysicalDevice = context.getPhysicalDevice(),
 	    .Device = context.getLogicalDevice(),
-	    // .QueueFamily = context.getQueueFamilyIndices(),
+	    .QueueFamily = context.getGraphicsQueueIndex(),
 	    .Queue = context.getGraphicsQueue(),
-	    .DescriptorPool = VK_NULL_HANDLE,
+	    // .DescriptorPool = context.getDescriptorManager().createPool(vk::DescriptorType::eCombinedImageSampler, 100),
 	    .RenderPass = render_pass.get(),
 	    .MinImageCount = 2,
 	    .ImageCount = 3,
@@ -50,6 +54,11 @@ void Widget::newFrame()
 	ImGui_ImplVulkan_NewFrame();
 	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
+}
+
+bool Widget::pollEvnet(const SDL_Event& event)
+{
+	return ImGui_ImplSDL3_ProcessEvent(&event);
 }
 
 void Widget::setCallback(std::function<void()> callback)

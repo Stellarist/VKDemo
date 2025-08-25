@@ -6,6 +6,7 @@
 
 #include "Window.hpp"
 
+class DescriptorManager;
 class CommandManager;
 class SyncManager;
 
@@ -25,8 +26,9 @@ private:
 	vk::Queue          graphics_queue;
 	vk::Queue          present_queue;
 
-	std::unique_ptr<CommandManager> command_manager;
-	std::unique_ptr<SyncManager>    sync_manager;
+	std::unique_ptr<DescriptorManager> descriptor_manager;
+	std::unique_ptr<CommandManager>    command_manager;
+	std::unique_ptr<SyncManager>       sync_manager;
 
 	Window* window{};
 
@@ -43,9 +45,6 @@ public:
 	Context(Window& window);
 	~Context();
 
-	void execute(std::function<void(vk::CommandBuffer)> func);
-	void wait();
-
 	vk::Instance       getInstance() const;
 	vk::SurfaceKHR     getSurface() const;
 	vk::PhysicalDevice getPhysicalDevice() const;
@@ -55,6 +54,19 @@ public:
 	uint32_t           getGraphicsQueueIndex() const;
 	uint32_t           getPresentQueueIndex() const;
 
-	CommandManager& getCommandManager() const;
-	SyncManager&    getSyncManager() const;
+	DescriptorManager& getDescriptorManager() const;
+	CommandManager&    getCommandManager() const;
+	SyncManager&       getSyncManager() const;
+
+	void execute(std::function<void(vk::CommandBuffer)> func);
+
+	void submit(vk::CommandBuffer                       command,
+	            std::span<const vk::Semaphore>          wait_semaphores = {},
+	            std::span<const vk::Semaphore>          signal_semaphores = {},
+	            std::span<const vk::PipelineStageFlags> wait_stages = {},
+	            vk::Fence                               fence = {});
+
+	void present(std::span<const uint32_t>         image_indices,
+	             std::span<const vk::SwapchainKHR> swap_chains = {},
+	             std::span<const vk::Semaphore>    wait_semaphores = {});
 };

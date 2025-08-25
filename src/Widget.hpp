@@ -28,5 +28,6 @@ public:
 
 	void render(vk::CommandBuffer command_buffer);
 	void newFrame();
+	bool pollEvnet(const SDL_Event& event);
 	void setCallback(std::function<void()> callback);
 };

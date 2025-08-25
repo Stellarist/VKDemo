@@ -12,11 +12,11 @@
 #include "core/Buffer.hpp"
 
 struct Frame {
-	uint32_t image_index{};
-	uint32_t wait_semaphore_index{};
-	uint32_t signal_semaphore_index{};
-	uint32_t fence_index{};
-	uint32_t command_buffer_index{};
+	uint32_t          image_index{};
+	vk::CommandBuffer command{};
+	vk::Semaphore     wait_semaphore{};
+	vk::Semaphore     signal_semaphore{};
+	vk::Fence         fence{};
 };
 
 struct Renderer {
