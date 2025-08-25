@@ -1,6 +1,6 @@
 #include "Buffer.hpp"
 
-Buffer::Buffer(Context& context, uint32_t size, vk::BufferUsageFlagBits usage, vk::MemoryPropertyFlags properties) :
+Buffer::Buffer(Context& context, uint32_t size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties) :
     context(&context), size(size)
 {
 	create(usage, size);
@@ -10,11 +10,14 @@ Buffer::Buffer(Context& context, uint32_t size, vk::BufferUsageFlagBits usage, v
 
 Buffer::~Buffer()
 {
-	context->getLogicalDevice().freeMemory(memory);
-	context->getLogicalDevice().destroyBuffer(buffer);
+	if (memory)
+		context->getLogicalDevice().freeMemory(memory);
+
+	if (buffer)
+		context->getLogicalDevice().destroyBuffer(buffer);
 }
 
-void Buffer::create(vk::BufferUsageFlagBits usage, size_t size)
+void Buffer::create(vk::BufferUsageFlags usage, size_t size)
 {
 	vk::BufferCreateInfo create_info{};
 	create_info.setSize(size)
@@ -53,15 +56,34 @@ void Buffer::bind(size_t bind_offset)
 	context->getLogicalDevice().bindBufferMemory(buffer, memory, bind_offset);
 }
 
-void Buffer::copy(void* src, size_t copy_size)
+void Buffer::copyTo(vk::Buffer dst, size_t size, size_t src_offset, size_t dst_offset)
 {
-	std::memcpy(data, src, copy_size);
+	context->execute([&](vk::CommandBuffer command) {
+		vk::BufferCopy copy_region{};
+		copy_region.setSrcOffset(src_offset)
+		    .setDstOffset(dst_offset)
+		    .setSize(size);
+
+		command.copyBuffer(buffer, dst, copy_region);
+	});
+}
+
+void Buffer::copyFrom(vk::Buffer src, size_t size, size_t src_offset, size_t dst_offset)
+{
+	context->execute([&](vk::CommandBuffer command) {
+		vk::BufferCopy copy_region{};
+		copy_region.setSrcOffset(src_offset)
+		    .setDstOffset(dst_offset)
+		    .setSize(size);
+
+		command.copyBuffer(src, buffer, copy_region);
+	});
 }
 
 void Buffer::upload(void* src, size_t src_size, size_t dst_offset)
 {
 	map(src_size, dst_offset);
-	copy(src, src_size);
+	std::memcpy(data, src, src_size);
 	unmap();
 }
 

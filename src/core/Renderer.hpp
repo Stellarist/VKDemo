@@ -9,8 +9,6 @@
 #include "SwapChain.hpp"
 #include "RenderPass.hpp"
 #include "GraphicsPipeline.hpp"
-#include "CommandManager.hpp"
-#include "SyncManager.hpp"
 
 #include "Buffer.hpp"
 
@@ -27,16 +25,14 @@ struct Renderer {
 	std::unique_ptr<SwapChain>        swap_chain;
 	std::unique_ptr<RenderPass>       render_pass;
 	std::unique_ptr<GraphicsPipeline> graphics_pipeline;
-	std::unique_ptr<CommandManager>   command_manager;
-	std::unique_ptr<SyncManager>      sync_manager;
 
 	std::unique_ptr<Buffer> vertex_buffer;
-	std::unique_ptr<Buffer> host_buffer;
-	std::unique_ptr<Buffer> device_buffer;
+	std::unique_ptr<Buffer> staging_buffer;
 
 	Frame frame;
 
 	Renderer(Window& window);
+	~Renderer() = default;
 
 	void render();
 	void draw();

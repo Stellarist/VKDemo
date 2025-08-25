@@ -41,12 +41,13 @@ void SwapChain::create(uint32_t width, uint32_t height, bool old)
 	    .setPresentMode(present)
 	    .setOldSwapchain(old ? swap_chain : nullptr);
 
-	auto [graphics_index, present_index] = context->getQueueFamilyIndices();
+	auto graphics_index = context->getGraphicsQueueIndex();
+	auto present_index = context->getPresentQueueIndex();
 	if (present_index == graphics_index)
-		create_info.setQueueFamilyIndices(present_index.value())
+		create_info.setQueueFamilyIndices(present_index)
 		    .setImageSharingMode(vk::SharingMode::eExclusive);
 	else {
-		std::array queue_families = {graphics_index.value(), present_index.value()};
+		std::array queue_families = {graphics_index, present_index};
 		create_info.setQueueFamilyIndices(queue_families)
 		    .setImageSharingMode(vk::SharingMode::eConcurrent);
 	}

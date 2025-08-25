@@ -17,7 +17,7 @@ Widget::Widget(Window& window, Context& context, RenderPass& render_pass)
 	    .Instance = context.getInstance(),
 	    .PhysicalDevice = context.getPhysicalDevice(),
 	    .Device = context.getLogicalDevice(),
-	    .QueueFamily = context.getQueueFamilyIndices(),
+	    // .QueueFamily = context.getQueueFamilyIndices(),
 	    .Queue = context.getGraphicsQueue(),
 	    .DescriptorPool = VK_NULL_HANDLE,
 	    .RenderPass = render_pass.get(),

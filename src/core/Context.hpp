@@ -1,8 +1,13 @@
 #pragma once
 
+#include <functional>
+
 #include <vulkan/vulkan.hpp>
 
 #include "Window.hpp"
+
+class CommandManager;
+class SyncManager;
 
 struct QueueFamilyIndices {
 	std::optional<uint32_t> graphics_family;
@@ -20,6 +25,9 @@ private:
 	vk::Queue          graphics_queue;
 	vk::Queue          present_queue;
 
+	std::unique_ptr<CommandManager> command_manager;
+	std::unique_ptr<SyncManager>    sync_manager;
+
 	Window* window{};
 
 	QueueFamilyIndices queue_family_indices;
@@ -35,15 +43,8 @@ public:
 	Context(Window& window);
 	~Context();
 
-	void submit(vk::CommandBuffer                       ocommand,
-	            std::span<const vk::Semaphore>          wait_semaphores,
-	            std::span<const vk::Semaphore>          signal_semaphores,
-	            std::span<const vk::PipelineStageFlags> wait_stages,
-	            vk::Fence                               fence);
-	void present(vk::CommandBuffer                 command,
-	             std::span<const vk::Semaphore>    wait_semaphores,
-	             std::span<const vk::SwapchainKHR> swapchains,
-	             std::span<const uint32_t>         image_indices);
+	void execute(std::function<void(vk::CommandBuffer)> func);
+	void wait();
 
 	vk::Instance       getInstance() const;
 	vk::SurfaceKHR     getSurface() const;
@@ -51,5 +52,9 @@ public:
 	vk::Device         getLogicalDevice() const;
 	vk::Queue          getGraphicsQueue() const;
 	vk::Queue          getPresentQueue() const;
-	QueueFamilyIndices getQueueFamilyIndices() const;
+	uint32_t           getGraphicsQueueIndex() const;
+	uint32_t           getPresentQueueIndex() const;
+
+	CommandManager& getCommandManager() const;
+	SyncManager&    getSyncManager() const;
 };

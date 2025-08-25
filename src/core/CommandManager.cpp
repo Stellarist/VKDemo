@@ -15,7 +15,7 @@ void CommandManager::createPool()
 {
 	vk::CommandPoolCreateInfo pool_info{};
 	pool_info.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
-	    .setQueueFamilyIndex(context->getQueueFamilyIndices().graphics_family.value());
+	    .setQueueFamilyIndex(context->getGraphicsQueueIndex());
 
 	command_pool = context->getLogicalDevice().createCommandPool(pool_info);
 }
@@ -53,6 +53,35 @@ void CommandManager::freeBuffers(std::span<vk::CommandBuffer> buffers)
 	std::erase_if(command_buffers, [&](const vk::CommandBuffer& buffer) {
 		return std::find(buffers.begin(), buffers.end(), buffer) != buffers.end();
 	});
+}
+
+void CommandManager::submit(vk::CommandBuffer                       command,
+                            std::span<const vk::Semaphore>          wait_semaphores,
+                            std::span<const vk::Semaphore>          signal_semaphores,
+                            std::span<const vk::PipelineStageFlags> wait_stages,
+                            vk::Fence                               fence)
+{
+	vk::SubmitInfo submit_info{};
+	submit_info.setCommandBuffers(command)
+	    .setWaitSemaphores(wait_semaphores)
+	    .setSignalSemaphores(signal_semaphores)
+	    .setWaitDstStageMask(wait_stages);
+
+	context->getGraphicsQueue().submit(submit_info, fence);
+}
+
+void CommandManager::present(vk::CommandBuffer                 command,
+                             std::span<const uint32_t>         image_indices,
+                             std::span<const vk::SwapchainKHR> swap_chains,
+                             std::span<const vk::Semaphore>    wait_semaphores)
+{
+	vk::PresentInfoKHR present_info{};
+	present_info.setImageIndices(image_indices)
+	    .setSwapchains(swap_chains)
+	    .setWaitSemaphores(wait_semaphores);
+
+	if (context->getPresentQueue().presentKHR(present_info) != vk::Result::eSuccess)
+		throw std::runtime_error("Failed to present swap chain image");
 }
 
 void CommandManager::begin(vk::CommandBuffer command_buffer)
