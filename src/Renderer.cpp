@@ -3,9 +3,9 @@
 #include <vulkan/vulkan.hpp>
 #include <glm/glm.hpp>
 
-#include "CommandManager.hpp"
-#include "SyncManager.hpp"
-#include "Mesh.hpp"
+#include "core/CommandManager.hpp"
+#include "core/SyncManager.hpp"
+#include "core/Mesh.hpp"
 
 constexpr std::array<Vertex, 4> vertices = {
     Vertex{{-0.5, -0.5, 0.0}, {0.0, 0.0, -1.0}, {0.0, 0.0}, {1.0, 0.0, 0.0, 1.0}},

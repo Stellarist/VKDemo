@@ -1,13 +1,16 @@
-#include "Application.hpp"
-
-#include <print>
+#include "Window.hpp"
+#include "Renderer.hpp"
 
 int main(int argc, char** argv)
 {
-	try {
-		Application().run();
-	} catch (const std::exception& e) {
-		std::println("Error: {}", e.what());
+	Window   window("VKDemo", 2560, 1440);
+	Renderer renderer(window);
+	// Widget   widget();
+
+	while (!window.shouldClose()) {
+		renderer.render();
+		window.pollEvents();
+		renderer.wait();
 	}
 
 	return 0;

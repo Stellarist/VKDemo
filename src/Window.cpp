@@ -24,6 +24,21 @@ Window::~Window()
 	SDL_Quit();
 }
 
+void Window::pollEvents()
+{
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
+		case SDL_EventType::SDL_EVENT_QUIT:
+			should_close = true;
+			break;
+		case SDL_EventType::SDL_EVENT_KEY_DOWN:
+			should_close = true;
+			break;
+		}
+	}
+}
+
 std::string Window::getTitle() const
 {
 	return title;
@@ -37,6 +52,11 @@ uint32_t Window::getWidth() const
 uint32_t Window::getHeight() const
 {
 	return height;
+}
+
+bool Window::shouldClose() const
+{
+	return should_close;
 }
 
 void Window::setTitle(std::string_view title)
