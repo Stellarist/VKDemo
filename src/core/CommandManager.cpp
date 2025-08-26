@@ -8,7 +8,7 @@ CommandManager::CommandManager(Context& context) :
 
 CommandManager::~CommandManager()
 {
-	context->getLogicalDevice().destroyCommandPool(command_pool);
+	context->getLogicalDevice().destroyCommandPool(command_maps.first);
 }
 
 void CommandManager::createPool()
@@ -17,7 +17,7 @@ void CommandManager::createPool()
 	pool_info.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
 	    .setQueueFamilyIndex(context->getGraphicsQueueIndex());
 
-	command_pool = context->getLogicalDevice().createCommandPool(pool_info);
+	command_maps.first = context->getLogicalDevice().createCommandPool(pool_info);
 }
 
 vk::CommandBuffer CommandManager::allocateBuffer()
@@ -27,15 +27,15 @@ vk::CommandBuffer CommandManager::allocateBuffer()
 
 std::vector<vk::CommandBuffer> CommandManager::allocateBuffers(uint32_t count)
 {
-	command_buffers.reserve(command_buffers.size() + count);
+	command_maps.second.reserve(command_maps.second.size() + count);
 
 	vk::CommandBufferAllocateInfo alloc_info{};
-	alloc_info.setCommandPool(command_pool)
+	alloc_info.setCommandPool(command_maps.first)
 	    .setLevel(vk::CommandBufferLevel::ePrimary)
 	    .setCommandBufferCount(count);
 
 	auto buffers = context->getLogicalDevice().allocateCommandBuffers(alloc_info);
-	command_buffers.insert(command_buffers.end(), buffers.begin(), buffers.end());
+	command_maps.second.insert(command_maps.second.end(), buffers.begin(), buffers.end());
 
 	return buffers;
 }
@@ -47,27 +47,27 @@ void CommandManager::freeBuffer(vk::CommandBuffer buffer)
 
 void CommandManager::freeBuffers(std::span<const vk::CommandBuffer> buffers)
 {
-	context->getLogicalDevice().freeCommandBuffers(command_pool, buffers);
-	std::erase_if(command_buffers, [&](const vk::CommandBuffer& buffer) {
+	context->getLogicalDevice().freeCommandBuffers(command_maps.first, buffers);
+	std::erase_if(command_maps.second, [&](const vk::CommandBuffer& buffer) {
 		return std::find(buffers.begin(), buffers.end(), buffer) != buffers.end();
 	});
 }
 
-void CommandManager::begin(vk::CommandBuffer command_buffer)
+void CommandManager::begin(vk::CommandBuffer command)
 {
 	vk::CommandBufferBeginInfo begin_info{};
 	begin_info.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
 
-	command_buffer.begin(begin_info);
+	command.begin(begin_info);
 }
 
-void CommandManager::end(vk::CommandBuffer command_buffer)
+void CommandManager::end(vk::CommandBuffer command)
 {
-	command_buffer.end();
+	command.end();
 }
 
 void CommandManager::resetPool(vk::CommandPoolResetFlags flags)
 {
-	context->getLogicalDevice().resetCommandPool(command_pool, flags);
-	command_buffers.clear();
+	context->getLogicalDevice().resetCommandPool(command_maps.first, flags);
+	command_maps.second.clear();
 }

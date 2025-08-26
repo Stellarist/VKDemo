@@ -10,6 +10,8 @@ class DescriptorManager;
 class CommandManager;
 class SyncManager;
 
+class Buffer;
+
 struct QueueFamilyIndices {
 	std::optional<uint32_t> graphics_family;
 	std::optional<uint32_t> present_family;
@@ -45,6 +47,18 @@ public:
 	Context(Window& window);
 	~Context();
 
+	void execute(std::function<void(vk::CommandBuffer)> func);
+
+	void submit(vk::CommandBuffer                       command,
+	            std::span<const vk::Semaphore>          wait_semaphores = {},
+	            std::span<const vk::Semaphore>          signal_semaphores = {},
+	            std::span<const vk::PipelineStageFlags> wait_stages = {},
+	            vk::Fence                               fence = {});
+
+	void present(std::span<const uint32_t>         image_indices,
+	             std::span<const vk::SwapchainKHR> swap_chains = {},
+	             std::span<const vk::Semaphore>    wait_semaphores = {});
+
 	vk::Instance       getInstance() const;
 	vk::SurfaceKHR     getSurface() const;
 	vk::PhysicalDevice getPhysicalDevice() const;
@@ -57,16 +71,4 @@ public:
 	DescriptorManager& getDescriptorManager() const;
 	CommandManager&    getCommandManager() const;
 	SyncManager&       getSyncManager() const;
-
-	void execute(std::function<void(vk::CommandBuffer)> func);
-
-	void submit(vk::CommandBuffer                       command,
-	            std::span<const vk::Semaphore>          wait_semaphores = {},
-	            std::span<const vk::Semaphore>          signal_semaphores = {},
-	            std::span<const vk::PipelineStageFlags> wait_stages = {},
-	            vk::Fence                               fence = {});
-
-	void present(std::span<const uint32_t>         image_indices,
-	             std::span<const vk::SwapchainKHR> swap_chains = {},
-	             std::span<const vk::Semaphore>    wait_semaphores = {});
 };

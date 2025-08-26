@@ -12,11 +12,13 @@
 #include "core/Buffer.hpp"
 
 struct Frame {
-	uint32_t          image_index{};
-	vk::CommandBuffer command{};
-	vk::Semaphore     wait_semaphore{};
-	vk::Semaphore     signal_semaphore{};
-	vk::Fence         fence{};
+	uint32_t           image_index{};
+	vk::CommandBuffer  command{};
+	vk::Semaphore      wait_semaphore{};
+	vk::Semaphore      signal_semaphore{};
+	vk::Fence          fence{};
+	vk::DescriptorPool pool{};
+	vk::DescriptorSet  set{};
 };
 
 struct Renderer {
@@ -25,11 +27,9 @@ struct Renderer {
 	std::unique_ptr<RenderPass>       render_pass;
 	std::unique_ptr<GraphicsPipeline> graphics_pipeline;
 
-	std::unique_ptr<Buffer>              staging_buffer;
-	std::unique_ptr<Buffer>              vertex_buffer;
-	std::unique_ptr<Buffer>              index_buffer;
-	std::vector<std::unique_ptr<Buffer>> uniform_buffers;
-	std::vector<std::unique_ptr<Buffer>> texture_buffers;
+	std::unique_ptr<Buffer> vertex_buffer;
+	std::unique_ptr<Buffer> index_buffer;
+	std::unique_ptr<Buffer> uniform_buffer;
 
 	Frame frame;
 

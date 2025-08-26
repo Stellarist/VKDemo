@@ -45,6 +45,8 @@ private:
 
 	std::vector<vk::Framebuffer> framebuffers;
 
+	PassConfig config;
+
 	Context*   context{};
 	SwapChain* swap_chain{};
 
@@ -62,4 +64,6 @@ public:
 	void next(vk::CommandBuffer command_buffer);
 
 	vk::RenderPass get() const;
+
+	const PassConfig& getConfig() const;
 };

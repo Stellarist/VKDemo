@@ -87,9 +87,29 @@ void Buffer::upload(void* src, size_t src_size, size_t dst_offset)
 	unmap();
 }
 
+std::unique_ptr<Buffer> Buffer::createAndUpload(Context& context, vk::BufferUsageFlagBits Usage, void* src, size_t size)
+{
+	auto host_buffer = std::make_unique<Buffer>(context, size,
+	                                            vk::BufferUsageFlagBits::eTransferSrc,
+	                                            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+	host_buffer->upload(static_cast<void*>(src), size);
+
+	auto device_buffer = std::make_unique<Buffer>(context, size,
+	                                              Usage | vk::BufferUsageFlagBits::eTransferDst,
+	                                              vk::MemoryPropertyFlagBits::eDeviceLocal);
+	device_buffer->copyFrom(host_buffer->get(), size);
+
+	return device_buffer;
+}
+
 vk::Buffer Buffer::get() const
 {
 	return buffer;
+}
+
+vk::DeviceSize Buffer::getSize() const
+{
+	return size;
 }
 
 MemoryInfo Buffer::queryMemoryInfo(vk::MemoryPropertyFlags prop_flags) const

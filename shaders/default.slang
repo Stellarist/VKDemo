@@ -10,11 +10,23 @@ struct VSOutput {
     float4 color : COLOR;
 };
 
+struct Transform{
+    float4x4 model;
+    float4x4 view;
+    float4x4 projection;
+};
+
+uniform Transform transform;
+
 [shader("vertex")]
 VSOutput vertexMain(VSInput input)
 {
     VSOutput output;
-    output.position = float4(input.pos, 1.0);
+    output.position = mul(transform.projection,
+                        mul(transform.view,
+                        mul(transform.model, 
+                        float4(input.pos, 1.0))));
+
     output.color = input.color;
 
     return output;

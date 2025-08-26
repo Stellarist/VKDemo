@@ -36,5 +36,8 @@ public:
 	void copyFrom(vk::Buffer src, size_t size, size_t src_offset = 0, size_t dst_offset = 0);
 	void upload(void* src, size_t src_size, size_t dst_offset = 0);
 
-	vk::Buffer get() const;
+	static std::unique_ptr<Buffer> createAndUpload(Context& context, vk::BufferUsageFlagBits Usage, void* src, size_t size);
+
+	vk::Buffer     get() const;
+	vk::DeviceSize getSize() const;
 };

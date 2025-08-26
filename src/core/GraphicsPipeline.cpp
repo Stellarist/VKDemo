@@ -1,33 +1,39 @@
 #include "GraphicsPipeline.hpp"
 
+#include "DescriptorManager.hpp"
 #include "Shader.hpp"
 #include "Mesh.hpp"
 
 GraphicsPipeline::GraphicsPipeline(Context& context, RenderPass& render_pass) :
     context(&context),
     render_pass(&render_pass),
-    shader(context, SHADER_DIR "/default.spv")
+    shader(context, SHADER_DIR "/default.spv"),
+    config()
 {
 	shader.setStage(vk::ShaderStageFlagBits::eVertex, "vertexMain");
 	shader.setStage(vk::ShaderStageFlagBits::eFragment, "fragmentMain");
 
-	auto binding = Vertex::binding();
-	auto attributes = Vertex::attributes();
+	auto vbinding = Vertex::binding();
+	auto vattributes = Vertex::attributes();
+	auto tbinding = Transform::binding();
+	descriptor_bindings.push_back(tbinding);
 
-	PipelineConfig config{};
-	config.vertex_input.setVertexBindingDescriptions(binding)
-	    .setVertexAttributeDescriptions(attributes);
-	config.pipeline_layout.setSetLayouts({});
+	auto layout = context.getDescriptorManager().createLayout(descriptor_bindings);
+
+	config.vertex_input.setVertexBindingDescriptions(vbinding)
+	    .setVertexAttributeDescriptions(vattributes);
+	config.pipeline_layout.setSetLayouts(layout);
 
 	pipeline_layout = context.getLogicalDevice().createPipelineLayout(config.pipeline_layout);
 
 	create(config);
 }
 
-GraphicsPipeline::GraphicsPipeline(Context& context, RenderPass& render_pass, const PipelineConfig& config) :
+GraphicsPipeline::GraphicsPipeline(Context& context, RenderPass& render_pass, const PipelineConfig& pipeline_config) :
     context(&context),
     render_pass(&render_pass),
-    shader(context, SHADER_DIR "/default.spv")
+    shader(context, SHADER_DIR "/default.spv"),
+    config(pipeline_config)
 {
 	shader.setStage(vk::ShaderStageFlagBits::eVertex, "vertexMain");
 	shader.setStage(vk::ShaderStageFlagBits::eFragment, "fragmentMain");
@@ -72,7 +78,17 @@ vk::PipelineLayout GraphicsPipeline::getLayout() const
 	return pipeline_layout;
 }
 
-Shader& GraphicsPipeline::getShader()
+const std::vector<vk::DescriptorSetLayoutBinding>& GraphicsPipeline::getDescriptorBindings() const
+{
+	return descriptor_bindings;
+}
+
+const PipelineConfig& GraphicsPipeline::getConfig() const
+{
+	return config;
+}
+
+const Shader& GraphicsPipeline::getShader() const
 {
 	return shader;
 }

@@ -2,33 +2,40 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "core/Context.hpp"
+#include "Context.hpp"
 
-struct DescriptorInfo {
-	uint32_t pool_index;
-	uint32_t set_index;
+template <>
+struct std::hash<vk::DescriptorPool> {
+	size_t operator()(vk::DescriptorPool pool) const noexcept
+	{
+		return std::hash<uint64_t>()(reinterpret_cast<uint64_t>(static_cast<vk::DescriptorPool::CType>(pool)));
+	}
 };
 
 class DescriptorManager {
 private:
-	std::vector<vk::DescriptorPool> descriptor_pool;
-	std::vector<vk::DescriptorSet>  descriptor_sets;
+	std::unordered_map<vk::DescriptorPool, std::vector<vk::DescriptorSet>> descriptor_map;
 
 	Context* context;
-
-	void createPool();
 
 public:
 	DescriptorManager(Context& context);
 	~DescriptorManager();
 
+	vk::DescriptorPool      createPool(vk::DescriptorType type, uint32_t max_sets);
 	vk::DescriptorSetLayout createLayout(std::span<const vk::DescriptorSetLayoutBinding> bindings);
 
-	vk::DescriptorPool createPool(vk::DescriptorType type, uint32_t max_sets);
+	vk::DescriptorSet              allocateSet(vk::DescriptorPool pool, const vk::DescriptorSetLayout& layout);
+	vk::DescriptorSet              allocateSet(vk::DescriptorPool pool, std::span<const vk::DescriptorSetLayoutBinding> bindings);
+	std::vector<vk::DescriptorSet> allocateSets(vk::DescriptorPool pool, std::span<const vk::DescriptorSetLayout> layouts);
 
-	vk::DescriptorSet              allocateSet(const vk::DescriptorSetLayoutBinding& binding);
-	std::vector<vk::DescriptorSet> allocateSets(std::span<const vk::DescriptorSetLayoutBinding> bindings);
+	void freeSet(vk::DescriptorPool pool, vk::DescriptorSet set);
+	void freeSets(vk::DescriptorPool pool, std::span<const vk::DescriptorSet> sets);
 
-	void freeSet(vk::DescriptorSet set);
-	void freeSets(std::span<vk::DescriptorSet> sets);
+	void updateSet(vk::DescriptorSet set, uint32_t binding, vk::DescriptorType type, const Buffer* buffer = {});
+
+	bool hasPool(vk::DescriptorPool pool) const;
+	void resetPool(vk::DescriptorPool pool);
+
+	const std::vector<vk::DescriptorSet>& getSets(vk::DescriptorPool pool) const;
 };

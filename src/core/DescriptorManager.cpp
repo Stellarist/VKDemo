@@ -1,5 +1,7 @@
 #include "DescriptorManager.hpp"
 
+#include "Buffer.hpp"
+
 DescriptorManager::DescriptorManager(Context& context) :
     context(&context)
 {
@@ -7,7 +9,7 @@ DescriptorManager::DescriptorManager(Context& context) :
 
 DescriptorManager::~DescriptorManager()
 {
-	for (auto& pool : descriptor_pool)
+	for (auto& [pool, sets] : descriptor_map)
 		context->getLogicalDevice().destroyDescriptorPool(pool);
 }
 
@@ -32,19 +34,103 @@ vk::DescriptorPool DescriptorManager::createPool(vk::DescriptorType type, uint32
 	    .setMaxSets(max_sets);
 
 	auto pool = context->getLogicalDevice().createDescriptorPool(create_info);
-	descriptor_pool.push_back(pool);
+
+	descriptor_map[pool].reserve(max_sets);
 
 	return pool;
 }
 
-std::vector<vk::DescriptorSet> DescriptorManager::allocateSets(std::span<const vk::DescriptorSetLayoutBinding> bindings)
+vk::DescriptorSet DescriptorManager::allocateSet(vk::DescriptorPool pool, const vk::DescriptorSetLayout& layout)
 {
-	descriptor_sets.reserve(descriptor_sets.size() + bindings.size());
+	return allocateSets(pool, {&layout, 1}).front();
+}
 
-	for (const auto& binding : bindings) {
-		// if (!context->getLogicalDevice().createDescriptorSetLayout(layout_info))
-		// 	throw std::runtime_error("Failed to create descriptor set layout");
+vk::DescriptorSet DescriptorManager::allocateSet(vk::DescriptorPool pool, std::span<const vk::DescriptorSetLayoutBinding> bindings)
+{
+	auto layout = createLayout(bindings);
+	return allocateSets(pool, {&layout, 1}).front();
+}
+
+std::vector<vk::DescriptorSet> DescriptorManager::allocateSets(vk::DescriptorPool pool, std::span<const vk::DescriptorSetLayout> layouts)
+{
+	if (descriptor_map.find(pool) == descriptor_map.end())
+		throw std::runtime_error("Descriptor pool not found");
+
+	if (descriptor_map[pool].size() + layouts.size() > descriptor_map[pool].capacity())
+		throw std::runtime_error("Descriptor pool capacity exceeded");
+
+	vk::DescriptorSetAllocateInfo alloc_info{};
+	alloc_info.setDescriptorPool(pool)
+	    .setDescriptorSetCount(layouts.size())
+	    .setSetLayouts(layouts);
+
+	auto sets = context->getLogicalDevice().allocateDescriptorSets(alloc_info);
+	descriptor_map[pool].insert(descriptor_map[pool].end(), sets.begin(), sets.end());
+
+	return sets;
+}
+
+void DescriptorManager::freeSet(vk::DescriptorPool pool, vk::DescriptorSet set)
+{
+	freeSets(pool, {&set, 1});
+}
+
+void DescriptorManager::freeSets(vk::DescriptorPool pool, std::span<const vk::DescriptorSet> sets)
+{
+	if (descriptor_map.find(pool) == descriptor_map.end())
+		throw std::runtime_error("Descriptor pool not found");
+
+	context->getLogicalDevice().freeDescriptorSets(pool, sets);
+
+	descriptor_map[pool].erase(
+	    std::remove_if(
+	        descriptor_map[pool].begin(),
+	        descriptor_map[pool].end(),
+	        [&sets](const vk::DescriptorSet& set) {
+		        return std::find(sets.begin(), sets.end(), set) != sets.end();
+	        }),
+	    descriptor_map[pool].end());
+}
+
+void DescriptorManager::updateSet(vk::DescriptorSet set, uint32_t binding, vk::DescriptorType type, const Buffer* buffer)
+{
+	vk::WriteDescriptorSet write{};
+	write.setDstSet(set)
+	    .setDstBinding(binding)
+	    .setDstArrayElement(0)
+	    .setDescriptorType(type)
+	    .setDescriptorCount(1);
+
+	if (buffer) {
+		vk::DescriptorBufferInfo buffer_info{};
+		buffer_info.setBuffer(buffer->get())
+		    .setOffset(0)
+		    .setRange(buffer->getSize());
+
+		write.setBufferInfo(buffer_info);
 	}
 
-	// return {sets_size, bindings.size()};
+	context->getLogicalDevice().updateDescriptorSets(write, {});
+}
+
+bool DescriptorManager::hasPool(vk::DescriptorPool pool) const
+{
+	return descriptor_map.find(pool) != descriptor_map.end();
+}
+
+void DescriptorManager::resetPool(vk::DescriptorPool pool)
+{
+	if (descriptor_map.find(pool) != descriptor_map.end())
+		context->getLogicalDevice().resetDescriptorPool(pool);
+
+	descriptor_map[pool].clear();
+}
+
+const std::vector<vk::DescriptorSet>& DescriptorManager::getSets(vk::DescriptorPool pool) const
+{
+	auto it = descriptor_map.find(pool);
+	if (it != descriptor_map.end())
+		return it->second;
+
+	throw std::runtime_error("Descriptor pool not found");
 }

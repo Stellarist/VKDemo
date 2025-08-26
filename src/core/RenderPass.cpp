@@ -2,18 +2,19 @@
 
 RenderPass::RenderPass(Context& context, SwapChain& swap_chain) :
     context(&context),
-    swap_chain(&swap_chain)
+    swap_chain(&swap_chain),
+    config()
 {
-	PassConfig config{};
 	config.attachments.front().setFormat(swap_chain.getSurfaceFormat().format);
 
 	create(config);
 	createFrameBuffers(swap_chain.getImageViews(), swap_chain.getExtent(), swap_chain.getImageCount());
 }
 
-RenderPass::RenderPass(Context& context, SwapChain& swap_chain, const PassConfig& config) :
+RenderPass::RenderPass(Context& context, SwapChain& swap_chain, const PassConfig& pass_config) :
     context(&context),
-    swap_chain(&swap_chain)
+    swap_chain(&swap_chain),
+    config(pass_config)
 {
 	create(config);
 	createFrameBuffers(swap_chain.getImageViews(), swap_chain.getExtent(), swap_chain.getImageCount());
@@ -75,4 +76,9 @@ void RenderPass::next(vk::CommandBuffer command_buffer)
 vk::RenderPass RenderPass::get() const
 {
 	return render_pass;
+}
+
+const PassConfig& RenderPass::getConfig() const
+{
+	return config;
 }

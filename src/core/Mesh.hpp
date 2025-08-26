@@ -14,18 +14,10 @@ struct Vertex {
 	static std::vector<vk::VertexInputAttributeDescription> attributes();
 };
 
-template <typename Derived>
-struct Uniform {
-	static vk::DescriptorSetLayoutBinding binding()
-	{
-		Derived::binding();
-	}
-};
-
-struct Transform : public Uniform<Transform> {
-	glm::vec3 position;
-	glm::vec3 rotation;
-	glm::vec3 scale;
+struct Transform {
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 projection;
 
 	static vk::DescriptorSetLayoutBinding binding();
 };

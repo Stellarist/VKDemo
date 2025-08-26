@@ -2,19 +2,28 @@
 
 #include <vulkan/vulkan.hpp>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
+#include "core/DescriptorManager.hpp"
 #include "core/CommandManager.hpp"
 #include "core/SyncManager.hpp"
+#include "core/Buffer.hpp"
 #include "core/Mesh.hpp"
 
-constexpr std::array<Vertex, 4> vertices = {
+std::array<Vertex, 4> vertices = {
     Vertex{{-0.5, -0.5, 0.0}, {0.0, 0.0, -1.0}, {0.0, 0.0}, {1.0, 0.0, 0.0, 1.0}},
     Vertex{{-0.5, 0.5, 0.0}, {0.0, 0.0, -1.0}, {0.0, 1.0}, {1.0, 1.0, 0.0, 1.0}},
     Vertex{{0.5, 0.5, 0.0}, {0.0, 0.0, -1.0}, {1.0, 1.0}, {0.0, 0.0, 1.0, 1.0}},
     Vertex{{0.5, -0.5, 0.0}, {0.0, 0.0, -1.0}, {1.0, 0.0}, {0.0, 1.0, 0.0, 1.0}},
 };
 
-constexpr std::array<uint32_t, 6> indices = {0, 1, 2, 2, 3, 0};
+std::array<uint32_t, 6> indices = {0, 1, 2, 2, 3, 0};
+
+Transform transform = {
+    .model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+    .view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+    .projection = glm::perspective(glm::radians(45.0f), 2560.0f / 1440.0f, 0.1f, 100.0f),
+};
 
 Renderer::Renderer(Window& window)
 {
@@ -23,36 +32,28 @@ Renderer::Renderer(Window& window)
 	render_pass = std::make_unique<RenderPass>(*context, *swap_chain);
 	graphics_pipeline = std::make_unique<GraphicsPipeline>(*context, *render_pass);
 
-	staging_buffer = std::make_unique<Buffer>(*context, sizeof(vertices),
-	                                          vk::BufferUsageFlagBits::eTransferSrc,
-	                                          vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-	staging_buffer->upload(static_cast<void*>(const_cast<Vertex*>(vertices.data())), sizeof(vertices));
-	vertex_buffer = std::make_unique<Buffer>(*context, sizeof(vertices),
-	                                         vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst,
-	                                         vk::MemoryPropertyFlagBits::eDeviceLocal);
-	vertex_buffer->copyFrom(staging_buffer->get(), sizeof(vertices));
-
-	staging_buffer = std::make_unique<Buffer>(*context, sizeof(vertices),
-	                                          vk::BufferUsageFlagBits::eTransferSrc,
-	                                          vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-	staging_buffer->upload(static_cast<void*>(const_cast<uint32_t*>(indices.data())), sizeof(indices));
-	index_buffer = std::make_unique<Buffer>(*context, sizeof(indices),
-	                                        vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
-	                                        vk::MemoryPropertyFlagBits::eDeviceLocal);
-	index_buffer->copyFrom(staging_buffer->get(), sizeof(indices));
+	vertex_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eVertexBuffer, vertices.data(), sizeof(vertices));
+	index_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eIndexBuffer, indices.data(), sizeof(indices));
+	uniform_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eUniformBuffer, &transform, sizeof(Transform));
 
 	frame.command = context->getCommandManager().allocateBuffer();
 	frame.wait_semaphore = context->getSyncManager().allocateSemaphore();
 	frame.signal_semaphore = context->getSyncManager().allocateSemaphore();
 	frame.fence = context->getSyncManager().allocateFence();
+	context->getSyncManager().allocateFence();
+
+	frame.pool = context->getDescriptorManager().createPool(vk::DescriptorType::eUniformBuffer, 1);
+	frame.set = context->getDescriptorManager().allocateSet(frame.pool, graphics_pipeline->getDescriptorBindings());
+
+	context->getDescriptorManager().updateSet(frame.set, 0, vk::DescriptorType::eUniformBuffer, uniform_buffer.get());
 }
 
 void Renderer::render()
 {
-	auto command_manager = &context->getCommandManager();
-	auto sync_manager = &context->getSyncManager();
-	auto chain = swap_chain->get();
-	auto stage = vk::PipelineStageFlags(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	auto* command_manager = &context->getCommandManager();
+	auto* sync_manager = &context->getSyncManager();
+	auto  chain = swap_chain->get();
+	auto  stage = vk::PipelineStageFlags(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 
 	sync_manager->waitForFence(frame.fence);
 	sync_manager->resetFence(frame.fence);
@@ -92,6 +93,7 @@ void Renderer::draw()
 	frame.command.bindPipeline(vk::PipelineBindPoint::eGraphics, graphics_pipeline->get());
 	frame.command.bindVertexBuffers(0, vertex_buffer->get(), {0});
 	frame.command.bindIndexBuffer(index_buffer->get(), 0, vk::IndexType::eUint32);
+	frame.command.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, graphics_pipeline->getLayout(), 0, frame.set, {});
 	frame.command.drawIndexed(indices.size(), 1, 0, 0, 0);
 }
 

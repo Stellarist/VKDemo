@@ -87,7 +87,11 @@ private:
 	vk::Pipeline       pipeline;
 	vk::PipelineLayout pipeline_layout;
 
+	PipelineConfig config;
+
 	Shader shader;
+
+	std::vector<vk::DescriptorSetLayoutBinding> descriptor_bindings;
 
 	Context*    context{};
 	RenderPass* render_pass{};
@@ -102,5 +106,8 @@ public:
 	vk::Pipeline       get() const;
 	vk::PipelineLayout getLayout() const;
 
-	Shader& getShader();
+	const std::vector<vk::DescriptorSetLayoutBinding>& getDescriptorBindings() const;
+
+	const PipelineConfig& getConfig() const;
+	const Shader&         getShader() const;
 };
