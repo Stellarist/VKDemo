@@ -4,8 +4,6 @@
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_vulkan.h>
 
-#include "core/DescriptorManager.hpp"
-
 Widget::Widget(Window& window, Context& context, RenderPass& render_pass)
 {
 	IMGUI_CHECKVERSION();

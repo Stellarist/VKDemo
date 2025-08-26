@@ -7,7 +7,7 @@ RenderPass::RenderPass(Context& context, SwapChain& swap_chain) :
 	PassConfig config{};
 	config.attachments.front().setFormat(swap_chain.getSurfaceFormat().format);
 
-	createPass(config);
+	create(config);
 	createFrameBuffers(swap_chain.getImageViews(), swap_chain.getExtent(), swap_chain.getImageCount());
 }
 
@@ -15,7 +15,7 @@ RenderPass::RenderPass(Context& context, SwapChain& swap_chain, const PassConfig
     context(&context),
     swap_chain(&swap_chain)
 {
-	createPass(config);
+	create(config);
 	createFrameBuffers(swap_chain.getImageViews(), swap_chain.getExtent(), swap_chain.getImageCount());
 }
 
@@ -26,7 +26,7 @@ RenderPass::~RenderPass()
 	context->getLogicalDevice().destroyRenderPass(render_pass);
 }
 
-void RenderPass::createPass(const PassConfig& config)
+void RenderPass::create(const PassConfig& config)
 {
 	vk::RenderPassCreateInfo render_pass_info{};
 	render_pass_info.setAttachments(config.attachments)

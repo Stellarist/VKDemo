@@ -98,12 +98,9 @@ public:
 	~GraphicsPipeline();
 
 	void create(const PipelineConfig& config);
-	void bind(vk::CommandBuffer command_buffer);
 
 	vk::Pipeline       get() const;
 	vk::PipelineLayout getLayout() const;
 
 	Shader& getShader();
-
-	void create(Shader& shader);
 };

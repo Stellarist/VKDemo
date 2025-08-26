@@ -48,7 +48,7 @@ private:
 	Context*   context{};
 	SwapChain* swap_chain{};
 
-	void createPass(const PassConfig& config);
+	void create(const PassConfig& config);
 
 	void createFrameBuffers(std::span<const vk::ImageView> attachments, vk::Extent2D extent, uint32_t count);
 

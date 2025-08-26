@@ -17,6 +17,9 @@ GraphicsPipeline::GraphicsPipeline(Context& context, RenderPass& render_pass) :
 	PipelineConfig config{};
 	config.vertex_input.setVertexBindingDescriptions(binding)
 	    .setVertexAttributeDescriptions(attributes);
+	config.pipeline_layout.setSetLayouts({});
+
+	pipeline_layout = context.getLogicalDevice().createPipelineLayout(config.pipeline_layout);
 
 	create(config);
 }
@@ -42,8 +45,6 @@ void GraphicsPipeline::create(const PipelineConfig& config)
 {
 	auto stages = shader.getStages();
 
-	pipeline_layout = context->getLogicalDevice().createPipelineLayout(config.pipeline_layout);
-
 	vk::GraphicsPipelineCreateInfo pipeline_info{};
 	pipeline_info.setStages(stages)
 	    .setPVertexInputState(&config.vertex_input)
@@ -59,11 +60,6 @@ void GraphicsPipeline::create(const PipelineConfig& config)
 	    .setSubpass(0);
 
 	pipeline = context->getLogicalDevice().createGraphicsPipeline({}, pipeline_info).value;
-}
-
-void GraphicsPipeline::bind(vk::CommandBuffer command_buffer)
-{
-	command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
 }
 
 vk::Pipeline GraphicsPipeline::get() const
