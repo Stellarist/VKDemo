@@ -7,7 +7,7 @@
 #include "Component.hpp"
 #include "components/Transform.hpp"
 
-class Node : public Entity {
+class Node : public Object {
 private:
 	size_t      id;
 	std::string name;

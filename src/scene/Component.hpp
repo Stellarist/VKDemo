@@ -3,9 +3,9 @@
 #include <string>
 #include <typeindex>
 
-#include "Entity.hpp"
+#include "Object.hpp"
 
-class Component : public Entity {
+class Component : public Object {
 private:
 	std::string name;
 
