@@ -2,7 +2,7 @@
 
 #include "DescriptorManager.hpp"
 #include "Shader.hpp"
-#include "Mesh.hpp"
+#include "common/RenderData.hpp"
 
 GraphicsPipeline::GraphicsPipeline(Context& context, RenderPass& render_pass) :
     context(&context),

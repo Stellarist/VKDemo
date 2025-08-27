@@ -4,12 +4,12 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 
-#include "Window.hpp"
-#include "core/Context.hpp"
-#include "core/SwapChain.hpp"
-#include "core/RenderPass.hpp"
-#include "core/GraphicsPipeline.hpp"
-#include "core/Buffer.hpp"
+#include "gui/Window.hpp"
+#include "graphics/Context.hpp"
+#include "graphics/SwapChain.hpp"
+#include "graphics/RenderPass.hpp"
+#include "graphics/GraphicsPipeline.hpp"
+#include "graphics/Buffer.hpp"
 
 struct Frame {
 	uint32_t           image_index{};

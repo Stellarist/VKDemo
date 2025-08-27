@@ -5,8 +5,8 @@
 #include <vulkan/vulkan.hpp>
 
 #include "Window.hpp"
-#include "core/Context.hpp"
-#include "core/RenderPass.hpp"
+#include "render/graphics/Context.hpp"
+#include "render/graphics/RenderPass.hpp"
 
 struct WidgetInfo {
 	vk::Instance       instance;

@@ -4,7 +4,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "Window.hpp"
+#include "gui/Window.hpp"
 
 class DescriptorManager;
 class CommandManager;

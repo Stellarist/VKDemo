@@ -4,11 +4,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "core/DescriptorManager.hpp"
-#include "core/CommandManager.hpp"
-#include "core/SyncManager.hpp"
-#include "core/Buffer.hpp"
-#include "core/Mesh.hpp"
+#include "graphics/DescriptorManager.hpp"
+#include "graphics/CommandManager.hpp"
+#include "graphics/SyncManager.hpp"
+#include "graphics/Buffer.hpp"
+#include "common/RenderData.hpp"
 
 std::array<Vertex, 4> vertices = {
     Vertex{{-0.5, -0.5, 0.0}, {0.0, 0.0, -1.0}, {0.0, 0.0}, {1.0, 0.0, 0.0, 1.0}},

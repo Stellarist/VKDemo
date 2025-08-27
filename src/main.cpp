@@ -1,5 +1,5 @@
-#include "Window.hpp"
-#include "Renderer.hpp"
+#include "render/Renderer.hpp"
+#include "gui/Window.hpp"
 
 int main(int argc, char** argv)
 {

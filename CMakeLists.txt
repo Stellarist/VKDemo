@@ -5,6 +5,7 @@ project(VKDemo)
 add_compile_definitions(SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 add_compile_definitions(SHADER_DIR="${CMAKE_SOURCE_DIR}/shaders")
 add_compile_definitions(SCRIPTS_DIR="${CMAKE_SOURCE_DIR}/scripts")
+add_compile_definitions(GLM_ENABLE_EXPERIMENTAL)
 
 include_directories(src)
 
