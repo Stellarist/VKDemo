@@ -8,7 +8,7 @@
 
 #include "Node.hpp"
 
-class Scene : public Object {
+class Scene : public Entity {
 private:
 	std::string name;
 
