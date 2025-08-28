@@ -9,7 +9,7 @@ private:
 	std::vector<vk::Semaphore> semaphore_pool;
 	std::vector<vk::Fence>     fence_pool;
 
-	Context* context;
+	Context* context{};
 
 public:
 	SyncManager(Context& context);

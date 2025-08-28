@@ -9,6 +9,8 @@ DescriptorManager::DescriptorManager(Context& context) :
 
 DescriptorManager::~DescriptorManager()
 {
+	for (auto& layout : descriptor_layouts)
+		context->getLogicalDevice().destroyDescriptorSetLayout(layout);
 	for (auto& [pool, sets] : descriptor_map)
 		context->getLogicalDevice().destroyDescriptorPool(pool);
 }
@@ -19,6 +21,7 @@ vk::DescriptorSetLayout DescriptorManager::createLayout(std::span<const vk::Desc
 	create_info.setBindings(bindings);
 
 	auto layout = context->getLogicalDevice().createDescriptorSetLayout(create_info);
+	descriptor_layouts.push_back(layout);
 
 	return layout;
 }

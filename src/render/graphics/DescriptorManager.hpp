@@ -14,9 +14,10 @@ struct std::hash<vk::DescriptorPool> {
 
 class DescriptorManager {
 private:
+	std::vector<vk::DescriptorSetLayout>                                   descriptor_layouts;
 	std::unordered_map<vk::DescriptorPool, std::vector<vk::DescriptorSet>> descriptor_map;
 
-	Context* context;
+	Context* context{};
 
 public:
 	DescriptorManager(Context& context);
