@@ -81,7 +81,7 @@ auto Scene::getComponents() -> std::vector<T*>
 }
 
 template <typename T>
-void setComponents(std::vector<std::unique_ptr<T>>&& components)
+void Scene::setComponents(std::vector<std::unique_ptr<T>>&& components)
 {
 	std::vector<std::unique_ptr<Component>> result(components.size());
 	std::transform(components.begin(), components.end(), result.begin(), [](auto& component) -> std::unique_ptr<Component> {
