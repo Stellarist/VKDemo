@@ -1,6 +1,6 @@
 #include "RenderPass.hpp"
 
-RenderPass::RenderPass(Context& c, SwapChain& s, const PassConfig& p) :
+RenderPass::RenderPass(Context& c, SwapChain& s, const RenderPassConfig& p) :
     context(&c),
     swap_chain(&s),
     config(p)
@@ -18,7 +18,7 @@ RenderPass::~RenderPass()
 	context->getLogicalDevice().destroyRenderPass(render_pass);
 }
 
-void RenderPass::create(const PassConfig& config)
+void RenderPass::create(const RenderPassConfig& config)
 {
 	vk::RenderPassCreateInfo render_pass_info{};
 	render_pass_info.setAttachments(config.attachments)
@@ -69,7 +69,7 @@ vk::RenderPass RenderPass::get() const
 	return render_pass;
 }
 
-const PassConfig& RenderPass::getConfig() const
+const RenderPassConfig& RenderPass::getConfig() const
 {
 	return config;
 }

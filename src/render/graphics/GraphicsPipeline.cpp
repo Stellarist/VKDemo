@@ -4,7 +4,7 @@
 #include "Shader.hpp"
 #include "common/RenderData.hpp"
 
-GraphicsPipeline::GraphicsPipeline(Context& c, RenderPass& r, const PipelineConfig& p) :
+GraphicsPipeline::GraphicsPipeline(Context& c, RenderPass& r, const GraphicsPipelineConfig& p) :
     context(&c),
     render_pass(&r),
     shader(c, SHADER_DIR "/default.spv"),
@@ -35,7 +35,7 @@ GraphicsPipeline::~GraphicsPipeline()
 	context->getLogicalDevice().destroyPipelineLayout(pipeline_layout);
 }
 
-void GraphicsPipeline::create(const PipelineConfig& config)
+void GraphicsPipeline::create(const GraphicsPipelineConfig& config)
 {
 	auto stages = shader.getStages();
 
@@ -71,7 +71,7 @@ const std::vector<vk::DescriptorSetLayoutBinding>& GraphicsPipeline::getDescript
 	return descriptor_bindings;
 }
 
-const PipelineConfig& GraphicsPipeline::getConfig() const
+const GraphicsPipelineConfig& GraphicsPipeline::getConfig() const
 {
 	return config;
 }

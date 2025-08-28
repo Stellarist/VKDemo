@@ -5,7 +5,7 @@
 #include "Context.hpp"
 #include "SwapChain.hpp"
 
-struct PassConfig {
+struct RenderPassConfig {
 	std::vector<vk::AttachmentDescription> attachments = {
 	    vk::AttachmentDescription()
 	        .setFormat(vk::Format::eB8G8R8A8Srgb)
@@ -45,17 +45,17 @@ private:
 
 	std::vector<vk::Framebuffer> framebuffers;
 
-	PassConfig config;
+	RenderPassConfig config;
 
 	Context*   context{};
 	SwapChain* swap_chain{};
 
-	void create(const PassConfig& config);
+	void create(const RenderPassConfig& config);
 
 	void createFrameBuffers(std::span<const vk::ImageView> attachments, vk::Extent2D extent, uint32_t count);
 
 public:
-	RenderPass(Context& context, SwapChain& swap_chain, const PassConfig& config = {});
+	RenderPass(Context& context, SwapChain& swap_chain, const RenderPassConfig& config = {});
 	~RenderPass();
 
 	void begin(vk::CommandBuffer command_buffer, uint32_t framebuffer_index, const vk::Extent2D& extent, const vk::ClearValue& color);
@@ -64,5 +64,5 @@ public:
 
 	vk::RenderPass get() const;
 
-	const PassConfig& getConfig() const;
+	const RenderPassConfig& getConfig() const;
 };

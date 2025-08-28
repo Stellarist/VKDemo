@@ -8,7 +8,7 @@
 #include "RenderPass.hpp"
 #include "Shader.hpp"
 
-struct PipelineConfig {
+struct GraphicsPipelineConfig {
 	vk::PipelineVertexInputStateCreateInfo vertex_input{};
 
 	vk::PipelineInputAssemblyStateCreateInfo input_assembly{
@@ -87,7 +87,7 @@ private:
 	vk::Pipeline       pipeline;
 	vk::PipelineLayout pipeline_layout;
 
-	PipelineConfig config;
+	GraphicsPipelineConfig config;
 
 	Shader shader;
 
@@ -97,16 +97,16 @@ private:
 	RenderPass* render_pass{};
 
 public:
-	GraphicsPipeline(Context& context, RenderPass& render_pass, const PipelineConfig& config = {});
+	GraphicsPipeline(Context& context, RenderPass& render_pass, const GraphicsPipelineConfig& config = {});
 	~GraphicsPipeline();
 
-	void create(const PipelineConfig& config);
+	void create(const GraphicsPipelineConfig& config);
 
 	vk::Pipeline       get() const;
 	vk::PipelineLayout getLayout() const;
 
 	const std::vector<vk::DescriptorSetLayoutBinding>& getDescriptorBindings() const;
 
-	const PipelineConfig& getConfig() const;
-	const Shader&         getShader() const;
+	const GraphicsPipelineConfig& getConfig() const;
+	const Shader&                 getShader() const;
 };
