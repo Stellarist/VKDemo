@@ -2,16 +2,17 @@
 
 #include <string>
 #include <unordered_map>
+
 #include <glm/glm.hpp>
 
 #include "scene/Component.hpp"
 #include "Texture.hpp"
 
 enum class AlphaMode : uint8_t {
-	OPAQUE,
-	MASK,
-	BLEND,
-	OTHER
+	Opaque,
+	Mask,
+	Blend,
+	Other
 };
 
 class Material : public Component {
@@ -19,7 +20,7 @@ private:
 	glm::vec3 emissive{0.0f, 0.0f, 0.0f};
 	bool      double_sided{false};
 	float     alpha_cutoff{0.0f};
-	AlphaMode alpha_mode{AlphaMode::OPAQUE};
+	AlphaMode alpha_mode{AlphaMode::Opaque};
 
 	std::unordered_map<std::string, Texture*> textures;
 
@@ -55,7 +56,7 @@ public:
 
 class PBRMaterial : public Material {
 private:
-	glm::vec4 base_color_factor{0.0f, 0.0f, 0.0f, 0.0f};
+	glm::vec4 base_color_factor{1.0f};
 	float     metallic_factor{0.0f};
 	float     roughness_factor{0.0f};
 

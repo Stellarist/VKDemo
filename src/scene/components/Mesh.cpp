@@ -9,14 +9,14 @@ std::type_index Mesh::getType()
 	return typeid(Mesh);
 }
 
-Node* Mesh::getNode() const
+const std::vector<Node*>& Mesh::getNodes() const
 {
-	return node;
+	return nodes;
 }
 
-void Mesh::setNode(Node& node)
+void Mesh::addNode(Node& node)
 {
-	this->node = &node;
+	nodes.push_back(&node);
 }
 
 const AABB& Mesh::getBounds() const
@@ -24,7 +24,7 @@ const AABB& Mesh::getBounds() const
 	return bounds;
 }
 
-void Mesh::updateBounds(const std::vector<glm::vec3>& vertex_data, const std::vector<unsigned int>& index_data)
+void Mesh::updateBounds(const std::vector<glm::vec3>& vertex_data, const std::vector<uint32_t>& index_data)
 {
 	bounds.update(vertex_data, index_data);
 }

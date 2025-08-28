@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+
 #include <glm/glm.hpp>
 
 #include "scene/Component.hpp"
@@ -10,9 +11,9 @@ class Image : public Component {
 private:
 	std::vector<uint8_t> data;
 
-	unsigned int format{0};
-	unsigned int width{0};
-	unsigned int height{0};
+	uint32_t format{0};
+	uint32_t width{0};
+	uint32_t height{0};
 
 public:
 	Image(const std::string& name);
@@ -30,12 +31,12 @@ public:
 	auto getData() const -> const std::vector<uint8_t>&;
 	void setData(const std::vector<uint8_t>& new_data);
 
-	auto getFormat() const -> unsigned int;
-	void setFormat(unsigned int new_format);
+	auto getFormat() const -> uint32_t;
+	void setFormat(uint32_t new_format);
 
-	auto getWidth() const -> unsigned int;
-	void setWidth(unsigned int new_width);
+	auto getWidth() const -> uint32_t;
+	void setWidth(uint32_t new_width);
 
-	auto getHeight() const -> unsigned int;
-	void setHeight(unsigned int new_height);
+	auto getHeight() const -> uint32_t;
+	void setHeight(uint32_t new_height);
 };

@@ -40,14 +40,14 @@ public:
 	void addNode(std::unique_ptr<Node>&& node);
 
 	void addChild(Node& child);
-	auto getModel(unsigned int index = 0) -> std::unique_ptr<Component>;
+	auto getModel(uint32_t index = 0) -> std::unique_ptr<Component>;
 
 	template <typename T>
 	auto getComponents() -> std::vector<T*>;
 	auto getComponents(const std::type_index& type) const -> const std::vector<std::unique_ptr<Component>>&;
 
 	template <typename T>
-	void setComponents(std::vector<std::unique_ptr<Component>>&& components);
+	void setComponents(std::vector<std::unique_ptr<T>>&& components);
 	void setComponents(const std::type_index& type, std::vector<std::unique_ptr<Component>>&& components);
 
 	template <typename T>
@@ -81,7 +81,7 @@ auto Scene::getComponents() -> std::vector<T*>
 }
 
 template <typename T>
-void setComponents(std::vector<std::unique_ptr<Component>>&& components)
+void setComponents(std::vector<std::unique_ptr<T>>&& components)
 {
 	std::vector<std::unique_ptr<Component>> result(components.size());
 	std::transform(components.begin(), components.end(), result.begin(), [](auto& component) -> std::unique_ptr<Component> {

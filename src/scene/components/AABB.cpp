@@ -23,10 +23,10 @@ void AABB::update(const glm::vec3& point)
 	max = glm::max(max, point);
 }
 
-void AABB::update(const std::vector<glm::vec3>& vertex_data, const std::vector<unsigned int>& index_data)
+void AABB::update(const std::vector<glm::vec3>& vertex_data, const std::vector<uint32_t>& index_data)
 {
 	if (index_data.size() > 0)
-		for (unsigned int index_id : index_data)
+		for (uint32_t index_id : index_data)
 			update(vertex_data[index_id]);
 	else
 		for (auto vertex_id : vertex_data)

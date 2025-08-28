@@ -1,5 +1,6 @@
 {
   "dependencies": [
+    "glm",
     {
       "name": "imgui",
       "features": [
@@ -14,6 +15,6 @@
       ]
     },
     "vulkan",
-    "glm"
+    "tinygltf"
   ]
 }

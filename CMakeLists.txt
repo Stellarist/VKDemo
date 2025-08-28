@@ -5,7 +5,11 @@ project(VKDemo)
 add_compile_definitions(SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 add_compile_definitions(SHADER_DIR="${CMAKE_SOURCE_DIR}/shaders")
 add_compile_definitions(SCRIPTS_DIR="${CMAKE_SOURCE_DIR}/scripts")
+
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL)
+add_compile_definitions(TINYGLTF_IMPLEMENTATION)
+add_compile_definitions(STB_IMAGE_IMPLEMENTATION)
+add_compile_definitions(STB_IMAGE_WRITE_IMPLEMENTATION)
 
 include_directories(src)
 

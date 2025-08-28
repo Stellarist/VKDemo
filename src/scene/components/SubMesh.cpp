@@ -9,12 +9,12 @@ std::type_index SubMesh::getType()
 	return typeid(SubMesh);
 }
 
-unsigned int SubMesh::getVerticesCount() const
+uint32_t SubMesh::getVerticesCount() const
 {
 	return vertices_count;
 }
 
-unsigned int SubMesh::getIndicesCount() const
+uint32_t SubMesh::getIndicesCount() const
 {
 	return indices_count;
 }
@@ -24,30 +24,30 @@ auto SubMesh::getVertices() const -> const std::vector<float>&
 	return vertex_data;
 }
 
-void SubMesh::setVertices(const std::vector<float>& vertex_data, unsigned int count)
+void SubMesh::setVertices(const std::vector<float>& vertex_data, uint32_t count)
 {
 	this->vertex_data = vertex_data;
 	vertices_count = count;
 }
 
-void SubMesh::setVertices(std::vector<float>&& vertex_data, unsigned int count)
+void SubMesh::setVertices(std::vector<float>&& vertex_data, uint32_t count)
 {
 	this->vertex_data = std::move(vertex_data);
 	vertices_count = count;
 }
 
-auto SubMesh::getIndices() const -> const std::vector<unsigned int>&
+auto SubMesh::getIndices() const -> const std::vector<uint32_t>&
 {
 	return index_data;
 }
 
-void SubMesh::setIndices(const std::vector<unsigned int>& index_data)
+void SubMesh::setIndices(const std::vector<uint32_t>& index_data)
 {
 	this->index_data = index_data;
 	indices_count = this->index_data.size();
 }
 
-void SubMesh::setIndices(std::vector<unsigned int>&& index_data)
+void SubMesh::setIndices(std::vector<uint32_t>&& index_data)
 {
 	this->index_data = std::move(index_data);
 	indices_count = this->index_data.size();

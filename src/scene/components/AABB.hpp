@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+
 #include <glm/glm.hpp>
 
 #include "scene/Component.hpp"
@@ -25,7 +26,7 @@ public:
 	std::type_index getType() override;
 
 	void update(const glm::vec3& point);
-	void update(const std::vector<glm::vec3>& vertex_data, const std::vector<unsigned int>& index_data);
+	void update(const std::vector<glm::vec3>& vertex_data, const std::vector<uint32_t>& index_data);
 	void transform(const glm::mat4& transform);
 	void reset();
 

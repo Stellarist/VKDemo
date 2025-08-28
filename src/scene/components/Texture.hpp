@@ -1,8 +1,6 @@
 #pragma once
 
 #include <string>
-#include <typeindex>
-#include <cassert>
 
 #include "Image.hpp"
 #include "scene/Component.hpp"

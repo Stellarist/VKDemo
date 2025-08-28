@@ -44,7 +44,7 @@ void Scene::addChild(Node& child)
 	root->addChild(child);
 }
 
-auto Scene::getModel(unsigned int index) -> std::unique_ptr<Component>
+auto Scene::getModel(uint32_t index) -> std::unique_ptr<Component>
 {
 	auto meshed = std::move(components.at(typeid(SubMesh)));
 

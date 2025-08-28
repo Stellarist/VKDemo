@@ -19,32 +19,32 @@ void Image::setData(const std::vector<uint8_t>& new_data)
 	data = new_data;
 }
 
-unsigned int Image::getFormat() const
+uint32_t Image::getFormat() const
 {
 	return format;
 }
 
-void Image::setFormat(unsigned int new_format)
+void Image::setFormat(uint32_t new_format)
 {
 	format = new_format;
 }
 
-unsigned int Image::getWidth() const
+uint32_t Image::getWidth() const
 {
 	return width;
 }
 
-void Image::setWidth(unsigned int new_width)
+void Image::setWidth(uint32_t new_width)
 {
 	width = new_width;
 }
 
-unsigned int Image::getHeight() const
+uint32_t Image::getHeight() const
 {
 	return height;
 }
 
-void Image::setHeight(unsigned int new_height)
+void Image::setHeight(uint32_t new_height)
 {
 	height = new_height;
 }
