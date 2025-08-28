@@ -97,8 +97,7 @@ private:
 	RenderPass* render_pass{};
 
 public:
-	GraphicsPipeline(Context& context, RenderPass& render_pass);
-	GraphicsPipeline(Context& context, RenderPass& render_pass, const PipelineConfig& config);
+	GraphicsPipeline(Context& context, RenderPass& render_pass, const PipelineConfig& config = {});
 	~GraphicsPipeline();
 
 	void create(const PipelineConfig& config);

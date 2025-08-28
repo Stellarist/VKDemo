@@ -55,8 +55,7 @@ private:
 	void createFrameBuffers(std::span<const vk::ImageView> attachments, vk::Extent2D extent, uint32_t count);
 
 public:
-	RenderPass(Context& context, SwapChain& swap_chain);
-	RenderPass(Context& context, SwapChain& swap_chain, const PassConfig& config);
+	RenderPass(Context& context, SwapChain& swap_chain, const PassConfig& config = {});
 	~RenderPass();
 
 	void begin(vk::CommandBuffer command_buffer, uint32_t framebuffer_index, const vk::Extent2D& extent, const vk::ClearValue& color);

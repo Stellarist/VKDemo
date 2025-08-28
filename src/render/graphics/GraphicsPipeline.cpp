@@ -4,11 +4,11 @@
 #include "Shader.hpp"
 #include "common/RenderData.hpp"
 
-GraphicsPipeline::GraphicsPipeline(Context& context, RenderPass& render_pass) :
-    context(&context),
-    render_pass(&render_pass),
-    shader(context, SHADER_DIR "/default.spv"),
-    config()
+GraphicsPipeline::GraphicsPipeline(Context& c, RenderPass& r, const PipelineConfig& p) :
+    context(&c),
+    render_pass(&r),
+    shader(c, SHADER_DIR "/default.spv"),
+    config(p)
 {
 	shader.setStage(vk::ShaderStageFlagBits::eVertex, "vertexMain");
 	shader.setStage(vk::ShaderStageFlagBits::eFragment, "fragmentMain");
@@ -18,25 +18,13 @@ GraphicsPipeline::GraphicsPipeline(Context& context, RenderPass& render_pass) :
 	auto tbinding = Transform::binding();
 	descriptor_bindings.push_back(tbinding);
 
-	auto layout = context.getDescriptorManager().createLayout(descriptor_bindings);
+	auto layout = context->getDescriptorManager().createLayout(descriptor_bindings);
 
 	config.vertex_input.setVertexBindingDescriptions(vbinding)
 	    .setVertexAttributeDescriptions(vattributes);
 	config.pipeline_layout.setSetLayouts(layout);
 
-	pipeline_layout = context.getLogicalDevice().createPipelineLayout(config.pipeline_layout);
-
-	create(config);
-}
-
-GraphicsPipeline::GraphicsPipeline(Context& context, RenderPass& render_pass, const PipelineConfig& pipeline_config) :
-    context(&context),
-    render_pass(&render_pass),
-    shader(context, SHADER_DIR "/default.spv"),
-    config(pipeline_config)
-{
-	shader.setStage(vk::ShaderStageFlagBits::eVertex, "vertexMain");
-	shader.setStage(vk::ShaderStageFlagBits::eFragment, "fragmentMain");
+	pipeline_layout = context->getLogicalDevice().createPipelineLayout(config.pipeline_layout);
 
 	create(config);
 }

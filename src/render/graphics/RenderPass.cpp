@@ -1,23 +1,14 @@
 #include "RenderPass.hpp"
 
-RenderPass::RenderPass(Context& context, SwapChain& swap_chain) :
-    context(&context),
-    swap_chain(&swap_chain),
-    config()
+RenderPass::RenderPass(Context& c, SwapChain& s, const PassConfig& p) :
+    context(&c),
+    swap_chain(&s),
+    config(p)
 {
-	config.attachments.front().setFormat(swap_chain.getSurfaceFormat().format);
+	config.attachments.front().setFormat(swap_chain->getSurfaceFormat().format);
 
 	create(config);
-	createFrameBuffers(swap_chain.getImageViews(), swap_chain.getExtent(), swap_chain.getImageCount());
-}
-
-RenderPass::RenderPass(Context& context, SwapChain& swap_chain, const PassConfig& pass_config) :
-    context(&context),
-    swap_chain(&swap_chain),
-    config(pass_config)
-{
-	create(config);
-	createFrameBuffers(swap_chain.getImageViews(), swap_chain.getExtent(), swap_chain.getImageCount());
+	createFrameBuffers(swap_chain->getImageViews(), swap_chain->getExtent(), swap_chain->getImageCount());
 }
 
 RenderPass::~RenderPass()
