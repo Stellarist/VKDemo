@@ -32,9 +32,13 @@ Renderer::Renderer(Window& window)
 	render_pass = std::make_unique<RenderPass>(*context, *swap_chain);
 	graphics_pipeline = std::make_unique<GraphicsPipeline>(*context, *render_pass);
 
+	// TODO: turn it to non-static
 	vertex_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eVertexBuffer, vertices.data(), sizeof(vertices));
 	index_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eIndexBuffer, indices.data(), sizeof(indices));
 	uniform_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eUniformBuffer, &transform, sizeof(Transform));
+	texture = std::make_unique<Texture>(*context, ASSETS_DIR "/a.jpeg");
+	sampler = std::make_unique<Sampler>(*context);
+	texture->setSampler(*sampler);
 
 	frame.command = context->getCommandManager().allocateBuffer();
 	frame.wait_semaphore = context->getSyncManager().allocateSemaphore();
@@ -46,6 +50,7 @@ Renderer::Renderer(Window& window)
 	frame.set = context->getDescriptorManager().allocateSet(frame.pool, graphics_pipeline->getDescriptorBindings());
 
 	context->getDescriptorManager().updateSet(frame.set, 0, vk::DescriptorType::eUniformBuffer, uniform_buffer.get());
+	context->getDescriptorManager().updateSet(frame.set, 1, vk::DescriptorType::eCombinedImageSampler, texture.get());
 }
 
 void Renderer::render()

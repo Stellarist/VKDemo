@@ -10,8 +10,8 @@ struct Vertex {
 	glm::vec2 uv;
 	glm::vec4 color;
 
-	static vk::VertexInputBindingDescription                binding();
-	static std::vector<vk::VertexInputAttributeDescription> attributes();
+	static vk::VertexInputBindingDescription                binding(uint32_t binding = {});
+	static std::vector<vk::VertexInputAttributeDescription> attributes(uint32_t binding = {});
 };
 
 struct Transform {
@@ -19,5 +19,5 @@ struct Transform {
 	glm::mat4 view;
 	glm::mat4 projection;
 
-	static vk::DescriptorSetLayoutBinding binding();
+	static vk::DescriptorSetLayoutBinding binding(uint32_t binding = {});
 };

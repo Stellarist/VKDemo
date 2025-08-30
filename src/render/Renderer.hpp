@@ -10,6 +10,8 @@
 #include "graphics/RenderPass.hpp"
 #include "graphics/GraphicsPipeline.hpp"
 #include "graphics/Buffer.hpp"
+#include "graphics/Texture.hpp"
+#include "graphics/Sampler.hpp"
 
 struct Frame {
 	uint32_t           image_index{};
@@ -27,9 +29,11 @@ struct Renderer {
 	std::unique_ptr<RenderPass>       render_pass;
 	std::unique_ptr<GraphicsPipeline> graphics_pipeline;
 
-	std::unique_ptr<Buffer> vertex_buffer;
-	std::unique_ptr<Buffer> index_buffer;
-	std::unique_ptr<Buffer> uniform_buffer;
+	std::unique_ptr<Buffer>  vertex_buffer;
+	std::unique_ptr<Buffer>  index_buffer;
+	std::unique_ptr<Buffer>  uniform_buffer;
+	std::unique_ptr<Texture> texture;
+	std::unique_ptr<Sampler> sampler;
 
 	Frame frame;
 

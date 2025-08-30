@@ -10,13 +10,20 @@ GraphicsPipeline::GraphicsPipeline(Context& c, RenderPass& r, const GraphicsPipe
     shader(c, SHADER_DIR "/default.spv"),
     config(p)
 {
+	// move these to Shader
 	shader.setStage(vk::ShaderStageFlagBits::eVertex, "vertexMain");
 	shader.setStage(vk::ShaderStageFlagBits::eFragment, "fragmentMain");
 
 	auto vbinding = Vertex::binding();
 	auto vattributes = Vertex::attributes();
-	auto tbinding = Transform::binding();
-	descriptor_bindings.push_back(tbinding);
+
+	descriptor_bindings.push_back(Transform::binding(0));
+	descriptor_bindings.push_back(Sampler::binding(1));
+
+	vk::DescriptorSetLayoutBinding tex_binding{};
+	tex_binding.setBinding(1)
+	    .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+	    .setStageFlags(vk::ShaderStageFlagBits::eFragment);
 
 	auto layout = context->getDescriptorManager().createLayout(descriptor_bindings);
 

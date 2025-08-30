@@ -29,7 +29,7 @@ public:
 
 	void create(vk::BufferUsageFlags usage, size_t size);
 	void allocate(vk::MemoryPropertyFlags properties);
-	void map(size_t map_size, size_t map_offset);
+	void map(size_t map_size, size_t map_offset = {});
 	void unmap();
 	void bind(size_t bind_offset = 0);
 	void copyTo(vk::Buffer dst, size_t size, size_t src_offset = 0, size_t dst_offset = 0);

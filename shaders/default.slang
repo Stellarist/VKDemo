@@ -7,6 +7,8 @@ struct VSInput {
 
 struct VSOutput {
     float4 position : SV_POSITION;
+    float3 normal : NORMAL;
+    float2 uv: TEXCOORD;
     float4 color : COLOR;
 };
 
@@ -16,7 +18,8 @@ struct Transform{
     float4x4 projection;
 };
 
-uniform Transform transform;
+[[vk::binding(0, 0)]] ConstantBuffer<Transform> transform;
+[[vk::binding(1, 0)]] ConstantBuffer<Sampler2D> sampler;
 
 [shader("vertex")]
 VSOutput vertexMain(VSInput input)
@@ -27,6 +30,8 @@ VSOutput vertexMain(VSInput input)
                         mul(transform.model, 
                         float4(input.pos, 1.0))));
 
+    output.normal = input.normal;
+    output.uv = input.uv;
     output.color = input.color;
 
     return output;
@@ -35,5 +40,5 @@ VSOutput vertexMain(VSInput input)
 [shader("fragment")]
 float4 fragmentMain(VSOutput input) 
 {
-    return input.color;
+    return sampler.Sample(input.uv) * float4(input.color);
 }

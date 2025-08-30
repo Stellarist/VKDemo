@@ -28,12 +28,12 @@ vk::DescriptorSetLayout DescriptorManager::createLayout(std::span<const vk::Desc
 
 vk::DescriptorPool DescriptorManager::createPool(vk::DescriptorType type, uint32_t max_sets)
 {
-	vk::DescriptorPoolSize pool_size{};
-	pool_size.setType(type)
-	    .setDescriptorCount(max_sets);
+	std::array<vk::DescriptorPoolSize, 2> pool_sizes{};
+	pool_sizes[0].setType(type).setDescriptorCount(max_sets);
+	pool_sizes[1].setType(vk::DescriptorType::eCombinedImageSampler).setDescriptorCount(max_sets);
 
 	vk::DescriptorPoolCreateInfo create_info{};
-	create_info.setPoolSizes(pool_size)
+	create_info.setPoolSizes(pool_sizes)
 	    .setMaxSets(max_sets);
 
 	auto pool = context->getLogicalDevice().createDescriptorPool(create_info);
@@ -95,6 +95,7 @@ void DescriptorManager::freeSets(vk::DescriptorPool pool, std::span<const vk::De
 	    descriptor_map[pool].end());
 }
 
+// TODO: patch all sets
 void DescriptorManager::updateSet(vk::DescriptorSet set, uint32_t binding, vk::DescriptorType type, const Buffer* buffer)
 {
 	vk::WriteDescriptorSet write{};
@@ -111,6 +112,27 @@ void DescriptorManager::updateSet(vk::DescriptorSet set, uint32_t binding, vk::D
 		    .setRange(buffer->getSize());
 
 		write.setBufferInfo(buffer_info);
+	}
+
+	context->getLogicalDevice().updateDescriptorSets(write, {});
+}
+
+void DescriptorManager::updateSet(vk::DescriptorSet set, uint32_t binding, vk::DescriptorType type, const Texture* texture)
+{
+	vk::WriteDescriptorSet write{};
+	write.setDstSet(set)
+	    .setDstBinding(binding)
+	    .setDstArrayElement(0)
+	    .setDescriptorType(type)
+	    .setDescriptorCount(1);
+
+	if (texture) {
+		vk::DescriptorImageInfo image_info{};
+		image_info.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+		    .setImageView(texture->getView())
+		    .setSampler(texture->getSampler().get());
+
+		write.setImageInfo(image_info);
 	}
 
 	context->getLogicalDevice().updateDescriptorSets(write, {});
