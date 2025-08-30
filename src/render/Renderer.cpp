@@ -53,12 +53,10 @@ Renderer::Renderer(Window& window)
 	context->getDescriptorManager().updateSet(frame.set, 1, vk::DescriptorType::eCombinedImageSampler, texture.get());
 }
 
-void Renderer::render()
+void Renderer::begin()
 {
 	auto* command_manager = &context->getCommandManager();
 	auto* sync_manager = &context->getSyncManager();
-	auto  chain = swap_chain->get();
-	auto  stage = vk::PipelineStageFlags(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 
 	sync_manager->waitForFence(frame.fence);
 	sync_manager->resetFence(frame.fence);
@@ -81,16 +79,20 @@ void Renderer::render()
 	                              .setHeight(static_cast<float>(swap_chain->getExtent().height))
 	                              .setMinDepth(0.0f)
 	                              .setMaxDepth(1.0f));
+}
 
-	draw();
+void Renderer::end()
+{
+	auto chain = swap_chain->get();
+	auto stage = vk::PipelineStageFlags(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 
 	render_pass->end(frame.command);
-	command_manager->end(frame.command);
+	context->getCommandManager().end(frame.command);
 
 	context->submit(frame.command, {&frame.wait_semaphore, 1}, {&frame.signal_semaphore, 1}, {&stage, 1}, frame.fence);
 	context->present({&frame.image_index, 1}, {&chain, 1}, {&frame.signal_semaphore, 1});
 
-	frame.fence = sync_manager->nextFence(frame.fence);
+	frame.fence = context->getSyncManager().nextFence(frame.fence);
 }
 
 void Renderer::draw()

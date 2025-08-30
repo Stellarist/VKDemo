@@ -34,7 +34,8 @@ vk::DescriptorPool DescriptorManager::createPool(vk::DescriptorType type, uint32
 
 	vk::DescriptorPoolCreateInfo create_info{};
 	create_info.setPoolSizes(pool_sizes)
-	    .setMaxSets(max_sets);
+	    .setMaxSets(max_sets)
+	    .setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet);
 
 	auto pool = context->getLogicalDevice().createDescriptorPool(create_info);
 

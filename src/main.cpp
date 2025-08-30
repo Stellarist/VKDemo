@@ -12,7 +12,9 @@ int main(int argc, char** argv)
 
 	while (!window.shouldClose()) {
 		window.pollEvents();
-		renderer.render();
+		renderer.begin();
+		renderer.draw();
+		renderer.end();
 		renderer.wait();
 	}
 

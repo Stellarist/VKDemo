@@ -40,7 +40,8 @@ struct Renderer {
 	Renderer(Window& window);
 	~Renderer() = default;
 
-	void render();
+	void begin();
+	void end();
 	void draw();
 	void wait();
 };

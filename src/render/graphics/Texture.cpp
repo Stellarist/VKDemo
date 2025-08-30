@@ -132,9 +132,14 @@ void Texture::transitionImageLayout(vk::CommandBuffer command, vk::Image image, 
 
 		src_stage = vk::PipelineStageFlagBits::eTransfer;
 		dst_stage = vk::PipelineStageFlagBits::eFragmentShader;
-	} else {
+	} else if (old_layout == vk::ImageLayout::eUndefined && new_layout == vk::ImageLayout::eDepthAttachmentOptimal) {
+		barrier.setSrcAccessMask({});
+		barrier.setDstAccessMask(vk::AccessFlagBits::eDepthStencilAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentRead);
+
+		src_stage = vk::PipelineStageFlagBits::eTopOfPipe;
+		dst_stage = vk::PipelineStageFlagBits::eEarlyFragmentTests;
+	} else
 		throw std::invalid_argument("unsupported layout transition!");
-	}
 
 	command.pipelineBarrier(
 	    src_stage,
