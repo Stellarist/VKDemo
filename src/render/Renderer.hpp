@@ -32,7 +32,7 @@ struct Renderer {
 	std::unique_ptr<Buffer>  vertex_buffer;
 	std::unique_ptr<Buffer>  index_buffer;
 	std::unique_ptr<Buffer>  uniform_buffer;
-	std::unique_ptr<Image>   texture;
+	std::unique_ptr<Image>   image;
 	std::unique_ptr<Sampler> sampler;
 
 	Frame frame;

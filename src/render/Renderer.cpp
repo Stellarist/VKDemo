@@ -10,11 +10,12 @@
 #include "graphics/Buffer.hpp"
 #include "common/RenderData.hpp"
 
-std::array<Vertex, 4> vertices = {
-    Vertex{{-0.5, -0.5, 0.0}, {0.0, 0.0, -1.0}, {0.0, 0.0}, {1.0, 0.0, 0.0, 1.0}},
-    Vertex{{-0.5, 0.5, 0.0}, {0.0, 0.0, -1.0}, {0.0, 1.0}, {1.0, 1.0, 0.0, 1.0}},
-    Vertex{{0.5, 0.5, 0.0}, {0.0, 0.0, -1.0}, {1.0, 1.0}, {0.0, 0.0, 1.0, 1.0}},
-    Vertex{{0.5, -0.5, 0.0}, {0.0, 0.0, -1.0}, {1.0, 0.0}, {0.0, 1.0, 0.0, 1.0}},
+std::array<Vertex, 4>
+    vertices = {
+        Vertex{{-0.5, -0.5, 0.0}, {0.0, 0.0, -1.0}, {0.0, 0.0}, {1.0, 0.0, 0.0, 1.0}},
+        Vertex{{-0.5, 0.5, 0.0}, {0.0, 0.0, -1.0}, {0.0, 1.0}, {1.0, 1.0, 0.0, 1.0}},
+        Vertex{{0.5, 0.5, 0.0}, {0.0, 0.0, -1.0}, {1.0, 1.0}, {0.0, 0.0, 1.0, 1.0}},
+        Vertex{{0.5, -0.5, 0.0}, {0.0, 0.0, -1.0}, {1.0, 0.0}, {0.0, 1.0, 0.0, 1.0}},
 };
 
 std::array<uint32_t, 6> indices = {0, 1, 2, 2, 3, 0};
@@ -36,9 +37,9 @@ Renderer::Renderer(Window& window)
 	vertex_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eVertexBuffer, vertices.data(), sizeof(vertices));
 	index_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eIndexBuffer, indices.data(), sizeof(indices));
 	uniform_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eUniformBuffer, &transform, sizeof(Transform));
-	texture = std::make_unique<Image>(*context, ASSETS_DIR "/a.jpeg");
+	image = std::make_unique<Image>(*context, ASSETS_DIR "/a.jpeg");
 	sampler = std::make_unique<Sampler>(*context);
-	texture->setSampler(*sampler);
+	image->setSampler(*sampler);
 
 	frame.command = context->getCommandManager().allocateBuffer();
 	frame.wait_semaphore = context->getSyncManager().allocateSemaphore();
@@ -50,7 +51,7 @@ Renderer::Renderer(Window& window)
 	frame.set = context->getDescriptorManager().allocateSet(frame.pool, graphics_pipeline->getDescriptorBindings());
 
 	context->getDescriptorManager().updateSet(frame.set, 0, vk::DescriptorType::eUniformBuffer, uniform_buffer.get());
-	context->getDescriptorManager().updateSet(frame.set, 1, vk::DescriptorType::eCombinedImageSampler, texture.get());
+	context->getDescriptorManager().updateSet(frame.set, 1, vk::DescriptorType::eCombinedImageSampler, image.get());
 }
 
 void Renderer::begin()
