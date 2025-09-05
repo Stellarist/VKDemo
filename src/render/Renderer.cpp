@@ -36,7 +36,7 @@ Renderer::Renderer(Window& window)
 	vertex_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eVertexBuffer, vertices.data(), sizeof(vertices));
 	index_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eIndexBuffer, indices.data(), sizeof(indices));
 	uniform_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eUniformBuffer, &transform, sizeof(Transform));
-	texture = std::make_unique<Texture>(*context, ASSETS_DIR "/a.jpeg");
+	texture = std::make_unique<Image>(*context, ASSETS_DIR "/a.jpeg");
 	sampler = std::make_unique<Sampler>(*context);
 	texture->setSampler(*sampler);
 

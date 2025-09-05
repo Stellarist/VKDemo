@@ -345,7 +345,7 @@ void SceneLoader::printSceneComponents(const Scene& scene)
 	    typeid(SubMesh),
 	    typeid(PBRMaterial),
 	    typeid(Material),
-	    typeid(Texture),
+	    typeid(Image),
 	    typeid(Image),
 	    typeid(AABB)};
 

@@ -1,8 +1,8 @@
-#include "Texture.hpp"
+#include "Image.hpp"
 
 #include <stb_image.h>
 
-Texture::Texture(Context& context, std::string_view file_path) :
+Image::Image(Context& context, std::string_view file_path) :
     context(&context)
 {
 	readImage(file_path);
@@ -18,21 +18,21 @@ Texture::Texture(Context& context, std::string_view file_path) :
 	freeImage();
 }
 
-Texture::~Texture()
+Image::~Image()
 {
 	context->getLogicalDevice().destroyImageView(view);
 	context->getLogicalDevice().freeMemory(memory);
 	context->getLogicalDevice().destroyImage(image);
 }
 
-void Texture::readImage(std::string_view file_path)
+void Image::readImage(std::string_view file_path)
 {
 	data = stbi_load(file_path.data(), &width, &height, &channels, STBI_rgb_alpha);
 	if (!data)
 		throw std::runtime_error("failed to load texture image!");
 }
 
-void Texture::freeImage()
+void Image::freeImage()
 {
 	if (data) {
 		stbi_image_free(data);
@@ -40,7 +40,7 @@ void Texture::freeImage()
 	}
 }
 
-void Texture::createBuffer(uint32_t image_size)
+void Image::createBuffer(uint32_t image_size)
 {
 	buffer = std::make_unique<Buffer>(
 	    *context,
@@ -50,7 +50,7 @@ void Texture::createBuffer(uint32_t image_size)
 	buffer->upload(data, image_size);
 }
 
-void Texture::createImage(uint32_t width, uint32_t height)
+void Image::createImage(uint32_t width, uint32_t height)
 {
 	vk::ImageCreateInfo create_info{};
 	create_info.setImageType(vk::ImageType::e2D)
@@ -67,7 +67,7 @@ void Texture::createImage(uint32_t width, uint32_t height)
 	image = context->getLogicalDevice().createImage(create_info);
 }
 
-void Texture::allocateMemory()
+void Image::allocateMemory()
 {
 	vk::MemoryRequirements requirements = context->getLogicalDevice().getImageMemoryRequirements(image);
 
@@ -81,7 +81,7 @@ void Texture::allocateMemory()
 	context->getLogicalDevice().bindImageMemory(image, memory, 0);
 }
 
-void Texture::createImageView()
+void Image::createImageView()
 {
 	vk::ImageSubresourceRange range{};
 	vk::ComponentMapping      mapping{};
@@ -101,7 +101,7 @@ void Texture::createImageView()
 	view = context->getLogicalDevice().createImageView(create_info);
 }
 
-void Texture::transitionImageLayout(vk::CommandBuffer command, vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout)
+void Image::transitionImageLayout(vk::CommandBuffer command, vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout)
 {
 	vk::ImageSubresourceRange range{};
 	range.setAspectMask(vk::ImageAspectFlagBits::eColor)
@@ -150,7 +150,7 @@ void Texture::transitionImageLayout(vk::CommandBuffer command, vk::Image image, 
 	    barrier);
 }
 
-void Texture::copyBufferToImage(vk::CommandBuffer command, vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height)
+void Image::copyBufferToImage(vk::CommandBuffer command, vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height)
 {
 	vk::ImageSubresourceLayers layers{};
 	layers.setAspectMask(vk::ImageAspectFlagBits::eColor)
@@ -169,27 +169,27 @@ void Texture::copyBufferToImage(vk::CommandBuffer command, vk::Buffer buffer, vk
 	command.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, region);
 }
 
-vk::Image Texture::get() const
+vk::Image Image::get() const
 {
 	return image;
 }
 
-vk::ImageView Texture::getView() const
+vk::ImageView Image::getView() const
 {
 	return view;
 }
 
-void Texture::setSampler(Sampler& sampler)
+void Image::setSampler(Sampler& sampler)
 {
 	this->sampler = &sampler;
 }
 
-Sampler& Texture::getSampler() const
+Sampler& Image::getSampler() const
 {
 	return *sampler;
 }
 
-uint32_t Texture::queryMemoryType(uint32_t type, vk::MemoryPropertyFlags prop_flags) const
+uint32_t Image::queryMemoryType(uint32_t type, vk::MemoryPropertyFlags prop_flags) const
 {
 	auto property = context->getPhysicalDevice().getMemoryProperties();
 

@@ -118,7 +118,7 @@ void DescriptorManager::updateSet(vk::DescriptorSet set, uint32_t binding, vk::D
 	context->getLogicalDevice().updateDescriptorSets(write, {});
 }
 
-void DescriptorManager::updateSet(vk::DescriptorSet set, uint32_t binding, vk::DescriptorType type, const Texture* texture)
+void DescriptorManager::updateSet(vk::DescriptorSet set, uint32_t binding, vk::DescriptorType type, const Image* texture)
 {
 	vk::WriteDescriptorSet write{};
 	write.setDstSet(set)

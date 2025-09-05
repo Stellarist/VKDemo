@@ -6,7 +6,7 @@
 #include "Buffer.hpp"
 #include "Sampler.hpp"
 
-class Texture {
+class Image {
 private:
 	vk::Image        image;
 	vk::ImageView    view;
@@ -25,8 +25,8 @@ private:
 	uint32_t queryMemoryType(uint32_t type, vk::MemoryPropertyFlags prop_flags) const;
 
 public:
-	Texture(Context& context, std::string_view file_path);
-	~Texture();
+	Image(Context& context, std::string_view file_path);
+	~Image();
 
 	void readImage(std::string_view file_path);
 	void freeImage();

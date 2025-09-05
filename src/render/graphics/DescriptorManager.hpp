@@ -4,7 +4,7 @@
 
 #include "Context.hpp"
 #include "Buffer.hpp"
-#include "Texture.hpp"
+#include "Image.hpp"
 
 template <>
 struct std::hash<vk::DescriptorPool> {
@@ -36,7 +36,7 @@ public:
 	void freeSets(vk::DescriptorPool pool, std::span<const vk::DescriptorSet> sets);
 
 	void updateSet(vk::DescriptorSet set, uint32_t binding, vk::DescriptorType type, const Buffer* buffer = {});
-	void updateSet(vk::DescriptorSet set, uint32_t binding, vk::DescriptorType type, const Texture* texture = {});
+	void updateSet(vk::DescriptorSet set, uint32_t binding, vk::DescriptorType type, const Image* texture = {});
 
 	bool hasPool(vk::DescriptorPool pool) const;
 	void resetPool(vk::DescriptorPool pool);
