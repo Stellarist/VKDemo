@@ -9,12 +9,42 @@ std::type_index Texture::getType()
 	return typeid(Texture);
 }
 
-auto Texture::getImage() -> Image*
+const std::vector<uint8_t>& Texture::getData() const
 {
-	return image;
+	return data;
 }
 
-void Texture::setImage(Image& image)
+void Texture::setData(const std::vector<uint8_t>& new_data)
 {
-	this->image = &image;
+	data = new_data;
+}
+
+uint32_t Texture::getFormat() const
+{
+	return format;
+}
+
+void Texture::setFormat(uint32_t new_format)
+{
+	format = new_format;
+}
+
+uint32_t Texture::getWidth() const
+{
+	return width;
+}
+
+void Texture::setWidth(uint32_t new_width)
+{
+	width = new_width;
+}
+
+uint32_t Texture::getHeight() const
+{
+	return height;
+}
+
+void Texture::setHeight(uint32_t new_height)
+{
+	height = new_height;
 }

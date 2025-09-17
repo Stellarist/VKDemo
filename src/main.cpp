@@ -1,9 +1,10 @@
 #include "render/Renderer.hpp"
 #include "gui/Window.hpp"
+#include "resource/SceneLoader.hpp"
 
 int main(int argc, char** argv)
 {
-	// auto scene = SceneLoader::loadScene(ASSETS_DIR "/teapot.gltf");
+	auto scene = SceneLoader::loadScene(ASSETS_DIR "/a.gltf");
 
 	Window   window("VKDemo", 2560, 1440);
 	Renderer renderer(window);

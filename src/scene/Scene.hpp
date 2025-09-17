@@ -43,7 +43,7 @@ public:
 	auto getModel(uint32_t index = 0) -> std::unique_ptr<Component>;
 
 	template <typename T>
-	auto getComponents() -> std::vector<T*>;
+	auto getComponents() const -> std::vector<T*>;
 	auto getComponents(const std::type_index& type) const -> const std::vector<std::unique_ptr<Component>>&;
 
 	template <typename T>
@@ -67,12 +67,12 @@ public:
 };
 
 template <typename T>
-auto Scene::getComponents() -> std::vector<T*>
+auto Scene::getComponents() const -> std::vector<T*>
 {
-	auto result = std::vector<T*>{};
+	std::vector<T*> result;
 	if (hasComponent(typeid(T))) {
-		auto& scene_components = components.at(typeid(T));
-		result.reserve(scene_components.size());
+		auto& scene_components = getComponents(typeid(T));
+		result.resize(scene_components.size());
 		std::transform(scene_components.begin(), scene_components.end(), result.begin(), [](auto& component) -> T* {
 			return dynamic_cast<T*>(component.get());
 		});

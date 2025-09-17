@@ -10,6 +10,7 @@
 
 std::unique_ptr<Scene> SceneLoader::loadScene(std::string_view file_path)
 {
+	// Load Scene
 	tinygltf::Model    model;
 	tinygltf::TinyGLTF loader;
 	std::string        error, warn;
@@ -37,44 +38,19 @@ std::unique_ptr<Scene> SceneLoader::loadScene(std::string_view file_path)
 		lights.push_back(parseLight(tflight));
 	scene->setComponents(std::move(lights));
 
-	// Load Materials
-	// std::vector<Texture*> textures;
-	// if (scene->hasComponent<Texture>())
-	// 	textures = scene->getComponents<Texture>();
-	// std::vector<std::unique_ptr<Material>> materials;
-	// for (const auto& tfmaterial : model.materials) {
-	// 	auto material = parseMaterial(tfmaterial);
-	// 	// TODO: add texture
-	// 	materials.push_back(std::move(material));
-	// }
-	// scene->setComponents(std::move(materials));
-
-	// Load Meshes
-	// auto materials = scene->getComponents<Material>();
-	// for (auto& tfmesh : model.meshes) {
-	// 	auto mesh = parseMesh(tfmesh);
-
-	// 	for (size_t i = 0; i < tfmesh.primitives.size(); i++) {
-	// 		auto& tfprimitive = tfmesh.primitives[i];
-	// 		auto  submesh = std::make_unique<SubMesh>(tfmesh.name + "_primitive_" + std::to_string(i));
-
-	// 		for(auto& )
-	// 	}
-	// }
-
 	// Load Nodes
 	std::vector<std::unique_ptr<Node>> nodes;
-	for (size_t index = 0; index < model.nodes.size(); ++index) {
+	for (size_t index = 0; index < model.nodes.size(); index++) {
 		auto tfnode = model.nodes[index];
 		auto node = parseNode(tfnode, index);
 
-		if (tfnode.mesh >= 0) {
-			auto meshes = scene->getComponents<Mesh>();
-			assert(tfnode.mesh < meshes.size());
-			auto mesh = meshes[tfnode.mesh];
-			node->setComponent(*mesh);
-			mesh->addNode(*node);
-		}
+		// if (tfnode.mesh >= 0) {
+		// 	auto meshes = scene->getComponents<Mesh>();
+		// 	assert(tfnode.mesh < meshes.size());
+		// 	auto mesh = meshes[tfnode.mesh];
+		// 	node->setComponent(*mesh);
+		// 	mesh->addNode(*node);
+		// }
 
 		if (tfnode.camera >= 0) {
 			auto cameras = scene->getComponents<Camera>();
@@ -108,9 +84,52 @@ std::unique_ptr<Scene> SceneLoader::loadScene(std::string_view file_path)
 	return scene;
 }
 
-std::unique_ptr<SubMesh> SceneLoader::loadModel(std::string_view file_path, uint32_t index)
+std::unique_ptr<SubMesh> SceneLoader::loadModel(const tinygltf::Model& tfmodel, uint32_t index)
 {
 	auto submesh = std::make_unique<SubMesh>();
+
+	auto& tfmesh = tfmodel.meshes[index];
+	auto& tfprimitive = tfmesh.primitives[index];
+
+	const float* pos = nullptr;
+	const float* normals = nullptr;
+	const float* uvs = nullptr;
+	const float* colors = nullptr;
+
+	auto& accessor = tfmodel.accessors[tfprimitive.attributes.find("POSITION")->second];
+	auto& buffer_view = tfmodel.bufferViews[accessor.bufferView];
+
+	size_t vertex_count = accessor.count;
+	pos = reinterpret_cast<const float*>(&tfmodel.buffers[buffer_view.buffer].data[accessor.byteOffset + buffer_view.byteOffset]);
+
+	// submesh->setVerticesCount(static_cast<uint32_t>(vertex_count));
+
+	if (tfprimitive.attributes.find("NORMAL") != tfprimitive.attributes.end()) {
+		auto& accessor = tfmodel.accessors[tfprimitive.attributes.find("NORMAL")->second];
+		auto& buffer_view = tfmodel.bufferViews[accessor.bufferView];
+		normals = reinterpret_cast<const float*>(&tfmodel.buffers[buffer_view.buffer].data[accessor.byteOffset + buffer_view.byteOffset]);
+	}
+
+	if (tfprimitive.attributes.find("TEXCOORD_0") != tfprimitive.attributes.end()) {
+		auto& accessor = tfmodel.accessors[tfprimitive.attributes.find("TEXCOORD_0")->second];
+		auto& buffer_view = tfmodel.bufferViews[accessor.bufferView];
+		uvs = reinterpret_cast<const float*>(&tfmodel.buffers[buffer_view.buffer].data[accessor.byteOffset + buffer_view.byteOffset]);
+	}
+
+	if (tfprimitive.attributes.find("COLOR_0") != tfprimitive.attributes.end()) {
+		auto& accessor = tfmodel.accessors[tfprimitive.attributes.find("COLOR_0")->second];
+		auto& buffer_view = tfmodel.bufferViews[accessor.bufferView];
+		colors = reinterpret_cast<const float*>(&tfmodel.buffers[buffer_view.buffer].data[accessor.byteOffset + buffer_view.byteOffset]);
+	}
+
+	// if (tfprimitive.indices >= 0) {
+	// 	auto& accessor = tfmodel.accessors[tfprimitive.indices];
+	// 	auto& buffer_view = tfmodel.bufferViews[accessor.bufferView];
+	// 	auto* indices = reinterpret_cast<const uint32_t*>(&tfmodel.buffers[buffer_view.buffer].data[accessor.byteOffset + buffer_view.byteOffset]);
+
+	// 	std::vector<uint32_t> index_data(indices, indices + accessor.count);
+	// 	submesh->setIndices(std::move(index_data));
+	// }
 
 	// TODO: Load mesh data into submesh
 	return submesh;
@@ -120,6 +139,7 @@ std::unique_ptr<Node> SceneLoader::parseNode(const tinygltf::Node& tfnode, size_
 {
 	auto  node = std::make_unique<Node>(index, tfnode.name);
 	auto& transform = node->getComponent<Transform>();
+
 	if (!tfnode.translation.empty())
 		transform.setTranslation(glm::vec3{
 		    static_cast<float>(tfnode.translation[0]),
@@ -128,10 +148,10 @@ std::unique_ptr<Node> SceneLoader::parseNode(const tinygltf::Node& tfnode, size_
 
 	if (!tfnode.rotation.empty())
 		transform.setRotation(glm::quat{
-		    static_cast<float>(tfnode.rotation[3]),
 		    static_cast<float>(tfnode.rotation[0]),
 		    static_cast<float>(tfnode.rotation[1]),
-		    static_cast<float>(tfnode.rotation[2])});
+		    static_cast<float>(tfnode.rotation[2]),
+		    static_cast<float>(tfnode.rotation[3])});
 
 	if (!tfnode.scale.empty())
 		transform.setScale(glm::vec3{
@@ -345,8 +365,7 @@ void SceneLoader::printSceneComponents(const Scene& scene)
 	    typeid(SubMesh),
 	    typeid(PBRMaterial),
 	    typeid(Material),
-	    typeid(Image),
-	    typeid(Image),
+	    typeid(Texture),
 	    typeid(AABB)};
 
 	bool has_any_components = false;
@@ -399,11 +418,11 @@ void SceneLoader::printSceneComponents(const Scene& scene)
 					std::println("{}    Metallic: {:.2f}, Roughness: {:.2f}",
 					             is_last ? "        " : "│       ",
 					             material->getMetallicFactor(), material->getRoughnessFactor());
-				} else if (auto* image = dynamic_cast<Image*>(component.get())) {
+				} else if (auto* texture = dynamic_cast<Texture*>(component.get())) {
 					std::println("{}    Size: {}x{}, Format: {}, Data: {} bytes",
 					             is_last ? "        " : "│       ",
-					             image->getWidth(), image->getHeight(), image->getFormat(),
-					             image->getData().size());
+					             texture->getWidth(), texture->getHeight(), texture->getFormat(),
+					             texture->getData().size());
 				}
 			}
 		}
