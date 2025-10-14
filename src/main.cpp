@@ -5,6 +5,8 @@
 int main(int argc, char** argv)
 {
 	auto scene = SceneLoader::loadScene(ASSETS_DIR "/a.gltf");
+	SceneLoader::printSceneNodes(*scene);
+	SceneLoader::printSceneComponents(*scene);
 
 	Window   window("VKDemo", 2560, 1440);
 	Renderer renderer(window);

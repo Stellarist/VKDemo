@@ -4,8 +4,8 @@
 
 #include "SceneLoader.hpp"
 
-#include <print>
 #include <queue>
+#include <print>
 #include <stdexcept>
 
 std::unique_ptr<Scene> SceneLoader::loadScene(std::string_view file_path)
@@ -38,19 +38,30 @@ std::unique_ptr<Scene> SceneLoader::loadScene(std::string_view file_path)
 		lights.push_back(parseLight(tflight));
 	scene->setComponents(std::move(lights));
 
+	// Load Meshes
+	for (const auto& tfmesh : model.meshes) {
+		auto mesh = parseMesh(tfmesh);
+		for (auto index = 0; index < tfmesh.primitives.size(); index++) {
+			auto submesh = parseSubmesh(tfmesh, model, index);
+			mesh->addSubmesh(*submesh);
+			scene->addComponent(std::move(submesh));
+		}
+		scene->addComponent(std::move(mesh));
+	}
+
 	// Load Nodes
 	std::vector<std::unique_ptr<Node>> nodes;
 	for (size_t index = 0; index < model.nodes.size(); index++) {
 		auto tfnode = model.nodes[index];
 		auto node = parseNode(tfnode, index);
 
-		// if (tfnode.mesh >= 0) {
-		// 	auto meshes = scene->getComponents<Mesh>();
-		// 	assert(tfnode.mesh < meshes.size());
-		// 	auto mesh = meshes[tfnode.mesh];
-		// 	node->setComponent(*mesh);
-		// 	mesh->addNode(*node);
-		// }
+		if (tfnode.mesh >= 0) {
+			auto meshes = scene->getComponents<Mesh>();
+			assert(tfnode.mesh < meshes.size());
+			auto mesh = meshes[tfnode.mesh];
+			node->setComponent(*mesh);
+			mesh->addNode(*node);
+		}
 
 		if (tfnode.camera >= 0) {
 			auto cameras = scene->getComponents<Camera>();
@@ -74,12 +85,13 @@ std::unique_ptr<Scene> SceneLoader::loadScene(std::string_view file_path)
 	// Load Scenes
 	std::queue<std::pair<Node&, int>> traverse_nodes;
 
-	tinygltf::Scene* gltf_scene{};
+	tinygltf::Scene* tfscene = &model.scenes[model.defaultScene];
+	if (!tfscene)
+		throw std::runtime_error("No default scene found in glTF file.");
 
-	for (const auto& tfmesh : model.meshes) {
-		auto mesh = parseMesh(tfmesh);
-		scene->addComponent(std::move(mesh));
-	}
+	auto root_node = std::make_unique<Node>(0, tfscene->name);
+	/////////////////////
+	scene->setRoot(*root_node);
 
 	return scene;
 }
@@ -176,6 +188,70 @@ std::unique_ptr<Mesh> SceneLoader::parseMesh(const tinygltf::Mesh& tfmesh)
 	return mesh;
 }
 
+std::unique_ptr<SubMesh> SceneLoader::parseSubmesh(const tinygltf::Mesh& tfmesh, const tinygltf::Model& model, uint32_t index)
+{
+	const auto& tfprimitive = tfmesh.primitives[index];
+
+	auto submesh_name = std::format("{}_Primitive_{}", tfmesh.name, index);
+	auto submesh = std::make_unique<SubMesh>(std::move(submesh_name));
+
+	uint32_t vertex_count = 0, vertex_offset = 0;
+	if (!tfprimitive.attributes.empty())
+		vertex_count = static_cast<uint32_t>(getAttributeSize(&model, tfprimitive.attributes.begin()->second));
+	uint32_t vertex_stride = std::accumulate(tfprimitive.attributes.begin(), tfprimitive.attributes.end(), 0,
+	                                         [&](uint32_t sum, const auto& attribute) {
+		                                         return sum + static_cast<uint32_t>(getAttributeStride(&model, attribute.second));
+	                                         });
+	size_t   total_bytes = static_cast<size_t>(vertex_count) * vertex_stride;
+
+	std::vector<float> vertices_data(total_bytes / sizeof(float));
+
+	for (const auto& attribute : tfprimitive.attributes) {
+		auto attribute_name = attribute.first;
+		auto accessor_id = attribute.second;
+		std::transform(attribute_name.begin(), attribute_name.end(), attribute_name.begin(), ::toupper);
+
+		auto format = getAttributeFormat(&model, accessor_id);
+		auto stride = static_cast<uint32_t>(getAttributeStride(&model, accessor_id));
+		auto data = getAttributeData(model, accessor_id);
+		submesh->setAttribute(attribute_name, {format, stride});
+
+		for (uint32_t v = 0; v < vertex_count; v++) {
+			size_t dst_offset = v * vertex_stride + vertex_offset;
+			size_t src_offset = v * stride;
+			std::memcpy(reinterpret_cast<uint8_t*>(vertices_data.data()) + dst_offset,
+			            data.data() + src_offset, stride);
+		}
+
+		vertex_offset += stride;
+	}
+	submesh->setVertices(std::move(vertices_data), vertex_count);
+
+	if (tfprimitive.indices >= 0) {
+		auto format = getAttributeFormat(&model, tfprimitive.indices);
+		auto index_data = getAttributeData(model, tfprimitive.indices);
+
+		std::vector<uint32_t> indices;
+		switch (format) {
+		case static_cast<int>(vk::Format::eR8Uint):
+			indices = convertData<uint32_t>(index_data, 1);
+			break;
+		case static_cast<int>(vk::Format::eR16Uint):
+			indices = convertData<uint32_t>(index_data, 2);
+			break;
+		case static_cast<int>(vk::Format::eR32Uint):
+			indices = convertData<uint32_t>(index_data, 4);
+			break;
+		default:
+			throw std::runtime_error("Unsupported index format");
+		}
+
+		submesh->setIndices(std::move(indices));
+	}
+
+	return submesh;
+}
+
 std::unique_ptr<Camera> SceneLoader::parseCamera(const tinygltf::Camera& tfcamera)
 {
 	auto camera = std::make_unique<PerspectiveCamera>(tfcamera.name);
@@ -249,6 +325,56 @@ std::unique_ptr<Light> SceneLoader::parseLight(const tinygltf::Light& tflight)
 	return light;
 }
 
+std::vector<uint8_t> SceneLoader::getAttributeData(const tinygltf::Model& model, uint32_t accessor_index)
+{
+	assert(accessor_index < model.accessors.size());
+	const auto& accessor = model.accessors[accessor_index];
+
+	assert(accessor.bufferView < model.bufferViews.size());
+	const auto& buffer_view = model.bufferViews[accessor.bufferView];
+
+	assert(buffer_view.buffer < model.buffers.size());
+	const auto& buffer = model.buffers[buffer_view.buffer];
+
+	auto stride = accessor.ByteStride(buffer_view);
+	auto start_byte = accessor.byteOffset + buffer_view.byteOffset;
+	auto end_byte = start_byte + accessor.count * stride;
+
+	return {buffer.data.begin() + start_byte, buffer.data.begin() + end_byte};
+}
+
+size_t SceneLoader::getAttributeSize(const tinygltf::Model* model, uint32_t accessor_id)
+{
+	assert(accessor_id < model->accessors.size());
+
+	return model->accessors[accessor_id].count;
+}
+
+size_t SceneLoader::getAttributeStride(const tinygltf::Model* model, uint32_t accessor_id)
+{
+	assert(accessor_id < model->accessors.size());
+	auto& accessor = model->accessors[accessor_id];
+
+	assert(accessor.bufferView < model->bufferViews.size());
+	auto& buffer_view = model->bufferViews[accessor.bufferView];
+
+	return accessor.ByteStride(buffer_view);
+}
+
+int SceneLoader::getAttributeFormat(const tinygltf::Model* model, uint32_t accessor_id)
+{
+	assert(accessor_id < model->accessors.size());
+	auto& accessor = model->accessors[accessor_id];
+
+	int key = accessor.componentType * (accessor.normalized ? -1 : 1);
+	if (formats.find(key) == formats.end())
+		return static_cast<int>(vk::Format::eUndefined);
+	else if (formats.at(key).find(accessor.type) == formats.at(key).end())
+		return static_cast<int>(vk::Format::eUndefined);
+
+	return static_cast<int>(formats.at(key).at(accessor.type));
+}
+
 void SceneLoader::printSceneNodes(const Scene& scene)
 {
 	std::println("\n==================== Scene Nodes Tree ====================");
@@ -312,6 +438,7 @@ void SceneLoader::printSceneNodes(const Scene& scene)
 	}
 
 	std::println("=========================================================\n");
+	std::fflush(stdout);
 }
 
 void SceneLoader::printSceneComponents(const Scene& scene)
@@ -366,7 +493,8 @@ void SceneLoader::printSceneComponents(const Scene& scene)
 	    typeid(PBRMaterial),
 	    typeid(Material),
 	    typeid(Texture),
-	    typeid(AABB)};
+	    typeid(AABB),
+	};
 
 	bool has_any_components = false;
 	for (const auto& type : component_types) {
@@ -433,4 +561,5 @@ void SceneLoader::printSceneComponents(const Scene& scene)
 	}
 
 	std::println("=====================================================\n");
+	std::fflush(stdout);
 }

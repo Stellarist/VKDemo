@@ -62,15 +62,15 @@ void Scene::setComponents(const std::type_index& type, std::vector<std::unique_p
 	this->components[type] = std::move(components);
 }
 
-void Scene::addComponent(std::unique_ptr<Component>&& component, Node& node)
+void Scene::addComponent(std::unique_ptr<Component>&& component)
 {
-	node.setComponent(*component);
 	if (component)
 		components[component->getType()].emplace_back(std::move(component));
 }
 
-void Scene::addComponent(std::unique_ptr<Component>&& component)
+void Scene::addComponent(std::unique_ptr<Component>&& component, Node& node)
 {
+	node.setComponent(*component);
 	if (component)
 		components[component->getType()].emplace_back(std::move(component));
 }
