@@ -37,8 +37,6 @@ void Node::setParent(Node& parent)
 {
 	this->parent = &parent;
 	transform.invalidateWorldMatrix();
-	if (std::find(parent.getChildren().begin(), parent.getChildren().end(), this) == parent.getChildren().end())
-		parent.children.push_back(this);
 }
 
 Transform& Node::getTransform()
@@ -69,5 +67,4 @@ const std::vector<Node*>& Node::getChildren() const
 void Node::addChild(Node& child)
 {
 	children.push_back(&child);
-	child.setParent(*this);
 }

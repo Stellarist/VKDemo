@@ -85,13 +85,32 @@ std::unique_ptr<Scene> SceneLoader::loadScene(std::string_view file_path)
 	// Load Scenes
 	std::queue<std::pair<Node&, int>> traverse_nodes;
 
-	tinygltf::Scene* tfscene = &model.scenes[model.defaultScene];
+	tinygltf::Scene* tfscene = &model.scenes.front();
 	if (!tfscene)
 		throw std::runtime_error("No default scene found in glTF file.");
 
 	auto root_node = std::make_unique<Node>(0, tfscene->name);
-	/////////////////////
+	for (auto node_index : tfscene->nodes)
+		traverse_nodes.push({std::ref(*root_node), node_index});
+
+	while (!traverse_nodes.empty()) {
+		auto node_it = traverse_nodes.front();
+		traverse_nodes.pop();
+		if (node_it.second >= nodes.size())
+			continue;
+
+		auto& current_node = *nodes.at(node_it.second);
+		auto& traverse_root_node = node_it.first;
+		current_node.setParent(traverse_root_node);
+		traverse_root_node.addChild(current_node);
+
+		for (auto child_node_index : model.nodes.at(node_it.second).children)
+			traverse_nodes.push({std::ref(current_node), child_node_index});
+	}
+
 	scene->setRoot(*root_node);
+	nodes.insert(nodes.begin(), std::move(root_node));
+	scene->setNodes(std::move(nodes));
 
 	return scene;
 }

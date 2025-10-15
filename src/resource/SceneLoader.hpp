@@ -81,10 +81,10 @@ static const std::unordered_map<int, std::unordered_map<int, vk::Format>> format
     {
         TINYGLTF_COMPONENT_TYPE_SHORT,
         {
-            {TINYGLTF_TYPE_SCALAR, vk::Format::eR8Sint},
-            {TINYGLTF_TYPE_VEC2, vk::Format::eR8G8Sint},
-            {TINYGLTF_TYPE_VEC3, vk::Format::eR8G8B8Sint},
-            {TINYGLTF_TYPE_VEC4, vk::Format::eR8G8B8A8Sint},
+            {TINYGLTF_TYPE_SCALAR, vk::Format::eR16Sint},
+            {TINYGLTF_TYPE_VEC2, vk::Format::eR16G16Sint},
+            {TINYGLTF_TYPE_VEC3, vk::Format::eR16G16B16Sint},
+            {TINYGLTF_TYPE_VEC4, vk::Format::eR16G16B16A16Sint},
         },
     },
     {

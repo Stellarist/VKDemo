@@ -42,6 +42,6 @@ struct Renderer {
 
 	void begin();
 	void end();
-	void draw();
 	void wait();
+	void draw();
 };
