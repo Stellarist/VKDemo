@@ -14,9 +14,9 @@ const std::vector<uint8_t>& Texture::getData() const
 	return data;
 }
 
-void Texture::setData(const std::vector<uint8_t>& new_data)
+void Texture::setData(std::vector<uint8_t> new_data)
 {
-	data = new_data;
+	data = std::move(new_data);
 }
 
 uint32_t Texture::getFormat() const

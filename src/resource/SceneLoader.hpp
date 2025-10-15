@@ -15,11 +15,12 @@
 
 class SceneLoader {
 	template <typename T>
-	static std::vector<T> convertData(const std::vector<uint8_t>& data, size_t size);
+	static std::vector<T> convertData(std::span<const uint8_t> data, size_t size);
 
 	static std::vector<uint8_t> getAttributeData(const tinygltf::Model& model, uint32_t accessor_index);
-	static size_t               getAttributeSize(const tinygltf::Model* model, uint32_t accessor_id);
-	static size_t               getAttributeStride(const tinygltf::Model* model, uint32_t accessor_id);
+	static uint32_t             getAttributeCount(const tinygltf::Model* model, uint32_t accessor_id);
+	static uint32_t             getAttributeSize(const tinygltf::Model* model, uint32_t accessor_id);
+	static uint32_t             getAttributeStride(const tinygltf::Model* model, uint32_t accessor_id);
 	static int                  getAttributeFormat(const tinygltf::Model* model, uint32_t accessor_id);
 
 public:
@@ -41,10 +42,10 @@ public:
 };
 
 template <typename T>
-std::vector<T> SceneLoader::convertData(const std::vector<uint8_t>& data, size_t size)
+std::vector<T> SceneLoader::convertData(std::span<const uint8_t> data, size_t size)
 {
 	std::vector<T> result(data.size() / size);
-	for (auto i = 0; i < result.size(); i++)
+	for (size_t i = 0; i < result.size(); i++)
 		std::memcpy(&result[i], &data[i * size], sizeof(T));
 
 	return result;

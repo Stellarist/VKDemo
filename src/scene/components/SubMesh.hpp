@@ -9,7 +9,7 @@
 
 struct VertexAttribute {
 	int      format = 0;
-	uint32_t stride = 0;
+	uint32_t size = 0;
 	uint32_t offset = 0;
 };
 
@@ -45,17 +45,14 @@ public:
 	uint32_t getIndicesCount() const;
 
 	auto getVertices() const -> const std::vector<float>&;
-	void setVertices(const std::vector<float>& vertex_data, uint32_t count);
-	void setVertices(std::vector<float>&& vertex_data, uint32_t count);
+	void setVertices(std::vector<float> vertex_data, uint32_t count = 0);
 
 	auto getIndices() const -> const std::vector<uint32_t>&;
-	void setIndices(const std::vector<uint32_t>& index_data);
-	void setIndices(std::vector<uint32_t>&& index_data);
+	void setIndices(std::vector<uint32_t> index_data);
 
 	auto getAttributes() const -> const std::unordered_map<std::string, VertexAttribute>&;
 	bool getAttribute(const std::string& name, VertexAttribute& attribute) const;
 	void setAttribute(const std::string& name, const VertexAttribute& attribute);
-	void setAttribute(const std::string& name, VertexAttribute&& attribute);
 
 	auto getMaterial() const -> const Material*;
 	void setMaterial(const Material& material);

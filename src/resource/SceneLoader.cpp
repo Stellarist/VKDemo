@@ -133,7 +133,7 @@ std::unique_ptr<SubMesh> SceneLoader::loadModel(const tinygltf::Model& tfmodel, 
 	size_t vertex_count = accessor.count;
 	pos = reinterpret_cast<const float*>(&tfmodel.buffers[buffer_view.buffer].data[accessor.byteOffset + buffer_view.byteOffset]);
 
-	// submesh->setVerticesCount(static_cast<uint32_t>(vertex_count));
+	submesh->setVerticesCount(static_cast<uint32_t>(vertex_count));
 
 	if (tfprimitive.attributes.find("NORMAL") != tfprimitive.attributes.end()) {
 		auto& accessor = tfmodel.accessors[tfprimitive.attributes.find("NORMAL")->second];
@@ -214,56 +214,46 @@ std::unique_ptr<SubMesh> SceneLoader::parseSubmesh(const tinygltf::Mesh& tfmesh,
 	auto submesh_name = std::format("{}_Primitive_{}", tfmesh.name, index);
 	auto submesh = std::make_unique<SubMesh>(std::move(submesh_name));
 
-	uint32_t vertex_count = 0, vertex_offset = 0;
-	if (!tfprimitive.attributes.empty())
-		vertex_count = static_cast<uint32_t>(getAttributeSize(&model, tfprimitive.attributes.begin()->second));
+	// Load Vertices
+	uint32_t vertex_count = getAttributeCount(&model, tfprimitive.attributes.begin()->second);
 	uint32_t vertex_stride = std::accumulate(tfprimitive.attributes.begin(), tfprimitive.attributes.end(), 0,
 	                                         [&](uint32_t sum, const auto& attribute) {
-		                                         return sum + static_cast<uint32_t>(getAttributeStride(&model, attribute.second));
+		                                         return sum + getAttributeSize(&model, attribute.second);
 	                                         });
-	size_t   total_bytes = static_cast<size_t>(vertex_count) * vertex_stride;
 
-	std::vector<float> vertices_data(total_bytes / sizeof(float));
+	std::vector<float> vertices_data(vertex_count * vertex_stride / sizeof(float));
 
+	uint32_t vertex_offset = 0;
 	for (const auto& attribute : tfprimitive.attributes) {
 		auto attribute_name = attribute.first;
 		auto accessor_id = attribute.second;
 		std::transform(attribute_name.begin(), attribute_name.end(), attribute_name.begin(), ::toupper);
 
 		auto format = getAttributeFormat(&model, accessor_id);
-		auto stride = static_cast<uint32_t>(getAttributeStride(&model, accessor_id));
+		auto size = getAttributeSize(&model, accessor_id);
 		auto data = getAttributeData(model, accessor_id);
-		submesh->setAttribute(attribute_name, {format, stride});
+		submesh->setAttribute(attribute_name, {format, size});
 
-		for (uint32_t v = 0; v < vertex_count; v++) {
-			size_t dst_offset = v * vertex_stride + vertex_offset;
-			size_t src_offset = v * stride;
+		for (uint32_t vertex_index = 0; vertex_index < vertex_count; vertex_index++) {
+			size_t dst_offset = vertex_index * vertex_stride + vertex_offset;
+			size_t src_offset = vertex_index * size;
 			std::memcpy(reinterpret_cast<uint8_t*>(vertices_data.data()) + dst_offset,
-			            data.data() + src_offset, stride);
+			            data.data() + src_offset, size);
 		}
-
-		vertex_offset += stride;
+		vertex_offset += size;
 	}
+
 	submesh->setVertices(std::move(vertices_data), vertex_count);
 
+	// Load Indices
 	if (tfprimitive.indices >= 0) {
-		auto format = getAttributeFormat(&model, tfprimitive.indices);
 		auto index_data = getAttributeData(model, tfprimitive.indices);
+		auto index_byte_size = getAttributeSize(&model, tfprimitive.indices);
 
-		std::vector<uint32_t> indices;
-		switch (format) {
-		case static_cast<int>(vk::Format::eR8Uint):
-			indices = convertData<uint32_t>(index_data, 1);
-			break;
-		case static_cast<int>(vk::Format::eR16Uint):
-			indices = convertData<uint32_t>(index_data, 2);
-			break;
-		case static_cast<int>(vk::Format::eR32Uint):
-			indices = convertData<uint32_t>(index_data, 4);
-			break;
-		default:
-			throw std::runtime_error("Unsupported index format");
-		}
+		if (index_byte_size != 1 && index_byte_size != 2 && index_byte_size != 4)
+			throw std::runtime_error("Unsupported index byte size");
+
+		std::vector<uint32_t> indices = convertData<uint32_t>(index_data, index_byte_size);
 
 		submesh->setIndices(std::move(indices));
 	}
@@ -362,14 +352,25 @@ std::vector<uint8_t> SceneLoader::getAttributeData(const tinygltf::Model& model,
 	return {buffer.data.begin() + start_byte, buffer.data.begin() + end_byte};
 }
 
-size_t SceneLoader::getAttributeSize(const tinygltf::Model* model, uint32_t accessor_id)
+uint32_t SceneLoader::getAttributeCount(const tinygltf::Model* model, uint32_t accessor_id)
 {
 	assert(accessor_id < model->accessors.size());
 
-	return model->accessors[accessor_id].count;
+	return static_cast<uint32_t>(model->accessors[accessor_id].count);
 }
 
-size_t SceneLoader::getAttributeStride(const tinygltf::Model* model, uint32_t accessor_id)
+uint32_t SceneLoader::getAttributeSize(const tinygltf::Model* model, uint32_t accessor_id)
+{
+	assert(accessor_id < model->accessors.size());
+	auto& accessor = model->accessors[accessor_id];
+
+	size_t component_size = tinygltf::GetComponentSizeInBytes(accessor.componentType);
+	size_t component_num = tinygltf::GetNumComponentsInType(accessor.type);
+
+	return static_cast<uint32_t>(component_size * component_num);
+}
+
+uint32_t SceneLoader::getAttributeStride(const tinygltf::Model* model, uint32_t accessor_id)
 {
 	assert(accessor_id < model->accessors.size());
 	auto& accessor = model->accessors[accessor_id];
@@ -377,7 +378,7 @@ size_t SceneLoader::getAttributeStride(const tinygltf::Model* model, uint32_t ac
 	assert(accessor.bufferView < model->bufferViews.size());
 	auto& buffer_view = model->bufferViews[accessor.bufferView];
 
-	return accessor.ByteStride(buffer_view);
+	return static_cast<uint32_t>(accessor.ByteStride(buffer_view));
 }
 
 int SceneLoader::getAttributeFormat(const tinygltf::Model* model, uint32_t accessor_id)

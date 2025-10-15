@@ -27,7 +27,7 @@ public:
 	std::type_index getType() override;
 
 	auto getData() const -> const std::vector<uint8_t>&;
-	void setData(const std::vector<uint8_t>& new_data);
+	void setData(std::vector<uint8_t> new_data);
 
 	auto getFormat() const -> uint32_t;
 	void setFormat(uint32_t new_format);
