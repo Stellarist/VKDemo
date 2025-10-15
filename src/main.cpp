@@ -4,7 +4,7 @@
 
 int main(int argc, char** argv)
 {
-	auto scene = SceneLoader::loadScene(ASSETS_DIR "/a.gltf");
+	auto scene = SceneLoader::loadScene(ASSETS_DIR "/teapot.gltf");
 	SceneLoader::printSceneNodes(*scene);
 	SceneLoader::printSceneComponents(*scene);
 

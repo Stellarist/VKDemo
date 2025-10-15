@@ -133,7 +133,7 @@ std::unique_ptr<SubMesh> SceneLoader::loadModel(const tinygltf::Model& tfmodel, 
 	size_t vertex_count = accessor.count;
 	pos = reinterpret_cast<const float*>(&tfmodel.buffers[buffer_view.buffer].data[accessor.byteOffset + buffer_view.byteOffset]);
 
-	submesh->setVerticesCount(static_cast<uint32_t>(vertex_count));
+	// submesh->setVerticesCount(static_cast<uint32_t>(vertex_count));
 
 	if (tfprimitive.attributes.find("NORMAL") != tfprimitive.attributes.end()) {
 		auto& accessor = tfmodel.accessors[tfprimitive.attributes.find("NORMAL")->second];
@@ -171,31 +171,21 @@ std::unique_ptr<Node> SceneLoader::parseNode(const tinygltf::Node& tfnode, size_
 	auto  node = std::make_unique<Node>(index, tfnode.name);
 	auto& transform = node->getComponent<Transform>();
 
-	if (!tfnode.translation.empty())
-		transform.setTranslation(glm::vec3{
-		    static_cast<float>(tfnode.translation[0]),
-		    static_cast<float>(tfnode.translation[1]),
-		    static_cast<float>(tfnode.translation[2])});
+	if (const auto& translation = tfnode.translation; !translation.empty())
+		transform.setTranslation(glm::vec3(translation[0], translation[1], translation[2]));
 
-	if (!tfnode.rotation.empty())
-		transform.setRotation(glm::quat{
-		    static_cast<float>(tfnode.rotation[0]),
-		    static_cast<float>(tfnode.rotation[1]),
-		    static_cast<float>(tfnode.rotation[2]),
-		    static_cast<float>(tfnode.rotation[3])});
+	if (const auto& rotation = tfnode.rotation; !rotation.empty())
+		transform.setRotation(glm::quat(rotation[0], rotation[1], rotation[2], rotation[3]));
 
-	if (!tfnode.scale.empty())
-		transform.setScale(glm::vec3{
-		    static_cast<float>(tfnode.scale[0]),
-		    static_cast<float>(tfnode.scale[1]),
-		    static_cast<float>(tfnode.scale[2])});
+	if (const auto& scale = tfnode.scale; !scale.empty())
+		transform.setScale(glm::vec3(scale[0], scale[1], scale[2]));
 
-	if (!tfnode.matrix.empty())
-		transform.setMatrix(glm::mat4{
-		    static_cast<float>(tfnode.matrix[0]), static_cast<float>(tfnode.matrix[1]), static_cast<float>(tfnode.matrix[2]), static_cast<float>(tfnode.matrix[3]),
-		    static_cast<float>(tfnode.matrix[4]), static_cast<float>(tfnode.matrix[5]), static_cast<float>(tfnode.matrix[6]), static_cast<float>(tfnode.matrix[7]),
-		    static_cast<float>(tfnode.matrix[8]), static_cast<float>(tfnode.matrix[9]), static_cast<float>(tfnode.matrix[10]), static_cast<float>(tfnode.matrix[11]),
-		    static_cast<float>(tfnode.matrix[12]), static_cast<float>(tfnode.matrix[13]), static_cast<float>(tfnode.matrix[14]), static_cast<float>(tfnode.matrix[15])});
+	if (const auto& matrix = tfnode.matrix; !tfnode.matrix.empty())
+		transform.setMatrix(glm::mat4(
+		    matrix[0], matrix[1], matrix[2], matrix[3],
+		    matrix[4], matrix[5], matrix[6], matrix[7],
+		    matrix[8], matrix[9], matrix[10], matrix[11],
+		    matrix[12], matrix[13], matrix[14], matrix[15]));
 
 	return node;
 }
