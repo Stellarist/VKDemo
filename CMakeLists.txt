@@ -2,14 +2,6 @@ cmake_minimum_required(VERSION 4.0)
 
 project(VKDemo)
 
-add_compile_definitions(SOURCE_DIR="${CMAKE_SOURCE_DIR}")
-add_compile_definitions(SHADER_DIR="${CMAKE_SOURCE_DIR}/shaders")
-add_compile_definitions(ASSETS_DIR="${CMAKE_SOURCE_DIR}/assets")
-add_compile_definitions(SCRIPTS_DIR="${CMAKE_SOURCE_DIR}/scripts")
-add_compile_definitions(GLM_ENABLE_EXPERIMENTAL)
-
-include_directories(src)
-
 file(GLOB_RECURSE INC_LIST src/*.hpp)
 file(GLOB_RECURSE SRC_LIST src/*.cpp)
 file(GLOB_RECURSE SHADER_LIST shaders/*.slang)
@@ -25,8 +17,21 @@ find_package(imgui REQUIRED)
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
 add_executable(VKDemo
-	${INC_LIST} 
 	${SRC_LIST}
+)
+
+target_include_directories(VKDemo
+	PRIVATE
+		src
+)
+
+target_compile_definitions(VKDemo
+    PRIVATE
+        SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+        SHADER_DIR="${CMAKE_SOURCE_DIR}/shaders"
+        ASSETS_DIR="${CMAKE_SOURCE_DIR}/assets"
+        SCRIPTS_DIR="${CMAKE_SOURCE_DIR}/scripts"
+        GLM_ENABLE_EXPERIMENTAL
 )
 
 target_link_libraries(VKDemo
