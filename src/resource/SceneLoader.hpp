@@ -35,13 +35,10 @@ public:
 	static std::unique_ptr<Camera>   parseCamera(const tinygltf::Camera& tfcamera);
 	static std::unique_ptr<Light>    parseLight(const tinygltf::Light& tflight);
 	static std::unique_ptr<Material> parseMaterial(const tinygltf::Material& tfmaterial);
-	// static std::unique_ptr<Texture>  parseTexture(const tinygltf::Texture& tftexture) ;
-	// static std::unique_ptr<Image>    parseImage(tinygltf::Image& tfimage) ;
-	// static std::unique_ptr<Sampler>  parseSampler(const tinygltf::Sampler& tfsampler) ;
+	static std::unique_ptr<Texture>  parseTexture(const tinygltf::Texture& tftexture);
 
 	static void printSceneNodes(const Scene& scene);
 	static void printSceneComponents(const Scene& scene);
-
 	static void exportSubmeshToOBJ(const SubMesh& submesh, const std::string& filepath);
 	static void printSubmeshInfo(const SubMesh& submesh);
 	static void printSubmeshDetailed(const SubMesh& submesh);
@@ -50,16 +47,15 @@ public:
 template <typename S, typename D>
 std::vector<D> SceneLoader::convertData(std::span<const uint8_t> data)
 {
-	static_assert(sizeof(S) == 1 || sizeof(S) == 2 || sizeof(S) == 4,
-	              "Source type must be 1, 2, or 4 bytes");
+	static_assert(sizeof(S) <= sizeof(D),
+	              "Source type size must be less than or equal to destination type size");
 
 	const size_t   count = data.size() / sizeof(S);
 	std::vector<D> result(count);
 
 	const S* src_ptr = reinterpret_cast<const S*>(data.data());
-	for (size_t i = 0; i < count; i++) {
+	for (size_t i = 0; i < count; i++)
 		result[i] = static_cast<D>(src_ptr[i]);
-	}
 
 	return result;
 }
@@ -71,91 +67,95 @@ static const std::vector<std::string> attributes_names = {
     "COLOR_0",
 };
 
-static const std::unordered_map<int, std::unordered_map<int, vk::Format>> formats_map =
-    {{
-         TINYGLTF_COMPONENT_TYPE_BYTE,
-         {
-             {TINYGLTF_TYPE_SCALAR, vk::Format::eR8Sint},
-             {TINYGLTF_TYPE_VEC2, vk::Format::eR8G8Sint},
-             {TINYGLTF_TYPE_VEC3, vk::Format::eR8G8B8Sint},
-             {TINYGLTF_TYPE_VEC4, vk::Format::eR8G8B8A8Sint},
-         },
-     },
-     {
-         TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE,
-         {
-             {TINYGLTF_TYPE_SCALAR, vk::Format::eR8Uint},
-             {TINYGLTF_TYPE_VEC2, vk::Format::eR8G8Uint},
-             {TINYGLTF_TYPE_VEC3, vk::Format::eR8G8B8Uint},
-             {TINYGLTF_TYPE_VEC4, vk::Format::eR8G8B8A8Uint},
-         },
-     },
-     {
-         -TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE,
-         {
-             {TINYGLTF_TYPE_SCALAR, vk::Format::eR8Unorm},
-             {TINYGLTF_TYPE_VEC2, vk::Format::eR8G8Unorm},
-             {TINYGLTF_TYPE_VEC3, vk::Format::eR8G8B8Unorm},
-             {TINYGLTF_TYPE_VEC4, vk::Format::eR8G8B8A8Unorm},
-         },
-     },
-     {
-         TINYGLTF_COMPONENT_TYPE_SHORT,
-         {
-             {TINYGLTF_TYPE_SCALAR, vk::Format::eR16Sint},
-             {TINYGLTF_TYPE_VEC2, vk::Format::eR16G16Sint},
-             {TINYGLTF_TYPE_VEC3, vk::Format::eR16G16B16Sint},
-             {TINYGLTF_TYPE_VEC4, vk::Format::eR16G16B16A16Sint},
-         },
-     },
-     {
-         TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT,
-         {
-             {TINYGLTF_TYPE_SCALAR, vk::Format::eR16Uint},
-             {TINYGLTF_TYPE_VEC2, vk::Format::eR16G16Uint},
-             {TINYGLTF_TYPE_VEC3, vk::Format::eR16G16B16Uint},
-             {TINYGLTF_TYPE_VEC4, vk::Format::eR16G16B16A16Uint},
-         },
-     },
-     {
-         -TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT,
-         {
-             {TINYGLTF_TYPE_SCALAR, vk::Format::eR16Unorm},
-             {TINYGLTF_TYPE_VEC2, vk::Format::eR16G16Unorm},
-             {TINYGLTF_TYPE_VEC3, vk::Format::eR16G16B16Unorm},
-             {TINYGLTF_TYPE_VEC4, vk::Format::eR16G16B16A16Unorm},
-         },
-     },
-     {
-         TINYGLTF_COMPONENT_TYPE_INT,
-         {
-             {TINYGLTF_TYPE_SCALAR, vk::Format::eR32Sint},
-             {TINYGLTF_TYPE_VEC2, vk::Format::eR32G32Sint},
-             {TINYGLTF_TYPE_VEC3, vk::Format::eR32G32B32Sint},
-             {TINYGLTF_TYPE_VEC4, vk::Format::eR32G32B32A32Sint},
-         },
-     },
-     {
-         TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT,
-         {
-             {TINYGLTF_TYPE_SCALAR, vk::Format::eR32Uint},
-             {TINYGLTF_TYPE_VEC2, vk::Format::eR32G32Uint},
-             {TINYGLTF_TYPE_VEC3, vk::Format::eR32G32B32Uint},
-             {TINYGLTF_TYPE_VEC4, vk::Format::eR32G32B32A32Uint},
-         },
-     },
-     {
-         TINYGLTF_COMPONENT_TYPE_FLOAT,
-         {
-             {TINYGLTF_TYPE_SCALAR, vk::Format::eR32Sfloat},
-             {TINYGLTF_TYPE_VEC2, vk::Format::eR32G32Sfloat},
-             {TINYGLTF_TYPE_VEC3, vk::Format::eR32G32B32Sfloat},
-             {TINYGLTF_TYPE_VEC4, vk::Format::eR32G32B32A32Sfloat},
-         },
-     },
-     {TINYGLTF_COMPONENT_TYPE_DOUBLE, {
-                                          {TINYGLTF_TYPE_SCALAR, vk::Format::eR64Sfloat},
-                                          {TINYGLTF_TYPE_VEC2, vk::Format::eR64G64Sfloat},
-                                          {TINYGLTF_TYPE_VEC3, vk::Format::eR64G64B64Sfloat},
-                                          {TINYGLTF_TYPE_VEC4, vk::Format::eR64G64B64A64Sfloat},
-                                      }}};
+static const std::unordered_map<int, std::unordered_map<int, vk::Format>> formats_map = {
+    {
+        TINYGLTF_COMPONENT_TYPE_BYTE,
+        {
+            {TINYGLTF_TYPE_SCALAR, vk::Format::eR8Sint},
+            {TINYGLTF_TYPE_VEC2, vk::Format::eR8G8Sint},
+            {TINYGLTF_TYPE_VEC3, vk::Format::eR8G8B8Sint},
+            {TINYGLTF_TYPE_VEC4, vk::Format::eR8G8B8A8Sint},
+        },
+    },
+    {
+        TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE,
+        {
+            {TINYGLTF_TYPE_SCALAR, vk::Format::eR8Uint},
+            {TINYGLTF_TYPE_VEC2, vk::Format::eR8G8Uint},
+            {TINYGLTF_TYPE_VEC3, vk::Format::eR8G8B8Uint},
+            {TINYGLTF_TYPE_VEC4, vk::Format::eR8G8B8A8Uint},
+        },
+    },
+    {
+        -TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE,
+        {
+            {TINYGLTF_TYPE_SCALAR, vk::Format::eR8Unorm},
+            {TINYGLTF_TYPE_VEC2, vk::Format::eR8G8Unorm},
+            {TINYGLTF_TYPE_VEC3, vk::Format::eR8G8B8Unorm},
+            {TINYGLTF_TYPE_VEC4, vk::Format::eR8G8B8A8Unorm},
+        },
+    },
+    {
+        TINYGLTF_COMPONENT_TYPE_SHORT,
+        {
+            {TINYGLTF_TYPE_SCALAR, vk::Format::eR16Sint},
+            {TINYGLTF_TYPE_VEC2, vk::Format::eR16G16Sint},
+            {TINYGLTF_TYPE_VEC3, vk::Format::eR16G16B16Sint},
+            {TINYGLTF_TYPE_VEC4, vk::Format::eR16G16B16A16Sint},
+        },
+    },
+    {
+        TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT,
+        {
+            {TINYGLTF_TYPE_SCALAR, vk::Format::eR16Uint},
+            {TINYGLTF_TYPE_VEC2, vk::Format::eR16G16Uint},
+            {TINYGLTF_TYPE_VEC3, vk::Format::eR16G16B16Uint},
+            {TINYGLTF_TYPE_VEC4, vk::Format::eR16G16B16A16Uint},
+        },
+    },
+    {
+        -TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT,
+        {
+            {TINYGLTF_TYPE_SCALAR, vk::Format::eR16Unorm},
+            {TINYGLTF_TYPE_VEC2, vk::Format::eR16G16Unorm},
+            {TINYGLTF_TYPE_VEC3, vk::Format::eR16G16B16Unorm},
+            {TINYGLTF_TYPE_VEC4, vk::Format::eR16G16B16A16Unorm},
+        },
+    },
+    {
+        TINYGLTF_COMPONENT_TYPE_INT,
+        {
+            {TINYGLTF_TYPE_SCALAR, vk::Format::eR32Sint},
+            {TINYGLTF_TYPE_VEC2, vk::Format::eR32G32Sint},
+            {TINYGLTF_TYPE_VEC3, vk::Format::eR32G32B32Sint},
+            {TINYGLTF_TYPE_VEC4, vk::Format::eR32G32B32A32Sint},
+        },
+    },
+    {
+        TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT,
+        {
+            {TINYGLTF_TYPE_SCALAR, vk::Format::eR32Uint},
+            {TINYGLTF_TYPE_VEC2, vk::Format::eR32G32Uint},
+            {TINYGLTF_TYPE_VEC3, vk::Format::eR32G32B32Uint},
+            {TINYGLTF_TYPE_VEC4, vk::Format::eR32G32B32A32Uint},
+        },
+    },
+    {
+        TINYGLTF_COMPONENT_TYPE_FLOAT,
+        {
+            {TINYGLTF_TYPE_SCALAR, vk::Format::eR32Sfloat},
+            {TINYGLTF_TYPE_VEC2, vk::Format::eR32G32Sfloat},
+            {TINYGLTF_TYPE_VEC3, vk::Format::eR32G32B32Sfloat},
+            {TINYGLTF_TYPE_VEC4, vk::Format::eR32G32B32A32Sfloat},
+        },
+    },
+    {
+        TINYGLTF_COMPONENT_TYPE_DOUBLE,
+        {
+            {TINYGLTF_TYPE_SCALAR, vk::Format::eR64Sfloat},
+            {TINYGLTF_TYPE_VEC2, vk::Format::eR64G64Sfloat},
+            {TINYGLTF_TYPE_VEC3, vk::Format::eR64G64B64Sfloat},
+            {TINYGLTF_TYPE_VEC4, vk::Format::eR64G64B64A64Sfloat},
+        },
+    },
+};

@@ -296,6 +296,34 @@ std::unique_ptr<Camera> SceneLoader::parseCamera(const tinygltf::Camera& tfcamer
 	return camera;
 }
 
+std::unique_ptr<Light> SceneLoader::parseLight(const tinygltf::Light& tflight)
+{
+	std::unique_ptr<Light> light{};
+	if (tflight.type == "directional") {
+		light = std::make_unique<DirectionalLight>(tflight.name);
+	} else if (tflight.type == "point") {
+		light = std::make_unique<PointLight>(tflight.name);
+		const auto& range = tflight.range;
+		dynamic_cast<PointLight*>(light.get())->setRange(range);
+	} else if (tflight.type == "spot") {
+		light = std::make_unique<SpotLight>(tflight.name);
+		const auto& range = tflight.range;
+		const auto& spot = tflight.spot;
+		dynamic_cast<SpotLight*>(light.get())->setRange(range);
+		dynamic_cast<SpotLight*>(light.get())->setInnerConeAngle(spot.innerConeAngle);
+		dynamic_cast<SpotLight*>(light.get())->setOuterConeAngle(spot.outerConeAngle);
+	} else
+		throw std::runtime_error("Unknown light type");
+
+	const auto& color = tflight.color;
+	light->setColor({color[0], color[1], color[2]});
+
+	const auto& intensity = tflight.intensity;
+	light->setIntensity(intensity);
+
+	return light;
+}
+
 std::unique_ptr<Material> SceneLoader::parseMaterial(const tinygltf::Material& tfmaterial)
 {
 	auto material = std::make_unique<PBRMaterial>(tfmaterial.name);
@@ -330,32 +358,9 @@ std::unique_ptr<Material> SceneLoader::parseMaterial(const tinygltf::Material& t
 	return material;
 }
 
-std::unique_ptr<Light> SceneLoader::parseLight(const tinygltf::Light& tflight)
+std::unique_ptr<Texture> SceneLoader::parseTexture(const tinygltf::Texture& tftexture)
 {
-	std::unique_ptr<Light> light{};
-	if (tflight.type == "directional") {
-		light = std::make_unique<DirectionalLight>(tflight.name);
-	} else if (tflight.type == "point") {
-		light = std::make_unique<PointLight>(tflight.name);
-		const auto& range = tflight.range;
-		dynamic_cast<PointLight*>(light.get())->setRange(range);
-	} else if (tflight.type == "spot") {
-		light = std::make_unique<SpotLight>(tflight.name);
-		const auto& range = tflight.range;
-		const auto& spot = tflight.spot;
-		dynamic_cast<SpotLight*>(light.get())->setRange(range);
-		dynamic_cast<SpotLight*>(light.get())->setInnerConeAngle(spot.innerConeAngle);
-		dynamic_cast<SpotLight*>(light.get())->setOuterConeAngle(spot.outerConeAngle);
-	} else
-		throw std::runtime_error("Unknown light type");
-
-	const auto& color = tflight.color;
-	light->setColor({color[0], color[1], color[2]});
-
-	const auto& intensity = tflight.intensity;
-	light->setIntensity(intensity);
-
-	return light;
+	return std::make_unique<Texture>(tftexture.name);
 }
 
 std::vector<uint8_t> SceneLoader::getAttributeData(const tinygltf::Model& model, uint32_t accessor_index)
