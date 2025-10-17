@@ -47,4 +47,6 @@ add_custom_target(compile_shaders
 	DEPENDS ${SHADER_LIST}
 )
 
-add_dependencies(VKDemo compile_shaders)
+add_dependencies(VKDemo 
+	compile_shaders
+)
