@@ -51,7 +51,8 @@ public:
 	void setIndices(std::vector<uint32_t> index_data);
 
 	auto getAttributes() const -> const std::unordered_map<std::string, VertexAttribute>&;
-	bool getAttribute(const std::string& name, VertexAttribute& attribute) const;
+	auto getAttribute(const std::string& name) -> VertexAttribute*;
+	auto getAttribute(const std::string& name) const -> const VertexAttribute*;
 	void setAttribute(const std::string& name, const VertexAttribute& attribute);
 
 	auto getMaterial() const -> const Material*;

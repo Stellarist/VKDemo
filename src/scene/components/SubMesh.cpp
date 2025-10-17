@@ -46,14 +46,15 @@ auto SubMesh::getAttributes() const -> const std::unordered_map<std::string, Ver
 	return vertex_attributes;
 }
 
-bool SubMesh::getAttribute(const std::string& attribute_name, VertexAttribute& attribute) const
+VertexAttribute* SubMesh::getAttribute(const std::string& name)
 {
-	auto attrib_it = vertex_attributes.find(attribute_name);
-	if (attrib_it == vertex_attributes.end())
-		return false;
+	return const_cast<VertexAttribute*>(std::as_const(*this).getAttribute(name));
+}
 
-	attribute = attrib_it->second;
-	return true;
+const VertexAttribute* SubMesh::getAttribute(const std::string& name) const
+{
+	auto it = vertex_attributes.find(name);
+	return it != vertex_attributes.end() ? &it->second : nullptr;
 }
 
 void SubMesh::setAttribute(const std::string& attribute_name, const VertexAttribute& attribute)

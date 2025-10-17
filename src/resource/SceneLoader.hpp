@@ -14,14 +14,16 @@
 #include "scene/components/Light.hpp"
 
 class SceneLoader {
-	template <typename T>
-	static std::vector<T> convertData(std::span<const uint8_t> data, size_t size);
+	template <typename S, typename D>
+	static std::vector<D> convertData(std::span<const uint8_t> data);
 
-	static std::vector<uint8_t> getAttributeData(const tinygltf::Model& model, uint32_t accessor_index);
-	static uint32_t             getAttributeCount(const tinygltf::Model* model, uint32_t accessor_id);
-	static uint32_t             getAttributeSize(const tinygltf::Model* model, uint32_t accessor_id);
-	static uint32_t             getAttributeStride(const tinygltf::Model* model, uint32_t accessor_id);
-	static int                  getAttributeFormat(const tinygltf::Model* model, uint32_t accessor_id);
+	static std::vector<uint8_t>     getAttributeData(const tinygltf::Model& model, uint32_t accessor_index);
+	static std::span<const uint8_t> getAttributeDataView(const tinygltf::Model& model, uint32_t accessor_index);
+
+	static uint32_t getAttributeCount(const tinygltf::Model* model, uint32_t accessor_id);
+	static uint32_t getAttributeSize(const tinygltf::Model* model, uint32_t accessor_id);
+	static uint32_t getAttributeStride(const tinygltf::Model* model, uint32_t accessor_id);
+	static int      getAttributeFormat(const tinygltf::Model* model, uint32_t accessor_id);
 
 public:
 	static std::unique_ptr<Scene>   loadScene(std::string_view file_path);
@@ -39,104 +41,121 @@ public:
 
 	static void printSceneNodes(const Scene& scene);
 	static void printSceneComponents(const Scene& scene);
+
+	static void exportSubmeshToOBJ(const SubMesh& submesh, const std::string& filepath);
+	static void printSubmeshInfo(const SubMesh& submesh);
+	static void printSubmeshDetailed(const SubMesh& submesh);
 };
 
-template <typename T>
-std::vector<T> SceneLoader::convertData(std::span<const uint8_t> data, size_t size)
+template <typename S, typename D>
+std::vector<D> SceneLoader::convertData(std::span<const uint8_t> data)
 {
-	std::vector<T> result(data.size() / size);
-	for (size_t i = 0; i < result.size(); i++)
-		std::memcpy(&result[i], &data[i * size], sizeof(T));
+	static_assert(sizeof(S) == 1 || sizeof(S) == 2 || sizeof(S) == 4,
+	              "Source type must be 1, 2, or 4 bytes");
+
+	const size_t   count = data.size() / sizeof(S);
+	std::vector<D> result(count);
+
+	const S* src_ptr = reinterpret_cast<const S*>(data.data());
+	for (size_t i = 0; i < count; i++) {
+		result[i] = static_cast<D>(src_ptr[i]);
+	}
 
 	return result;
 }
 
-static const std::unordered_map<int, std::unordered_map<int, vk::Format>> formats = {
-    {
-        TINYGLTF_COMPONENT_TYPE_BYTE,
-        {
-            {TINYGLTF_TYPE_SCALAR, vk::Format::eR8Sint},
-            {TINYGLTF_TYPE_VEC2, vk::Format::eR8G8Sint},
-            {TINYGLTF_TYPE_VEC3, vk::Format::eR8G8B8Sint},
-            {TINYGLTF_TYPE_VEC4, vk::Format::eR8G8B8A8Sint},
-        },
-    },
-    {
-        TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE,
-        {
-            {TINYGLTF_TYPE_SCALAR, vk::Format::eR8Uint},
-            {TINYGLTF_TYPE_VEC2, vk::Format::eR8G8Uint},
-            {TINYGLTF_TYPE_VEC3, vk::Format::eR8G8B8Uint},
-            {TINYGLTF_TYPE_VEC4, vk::Format::eR8G8B8A8Uint},
-        },
-    },
-    {
-        -TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE,
-        {
-            {TINYGLTF_TYPE_SCALAR, vk::Format::eR8Unorm},
-            {TINYGLTF_TYPE_VEC2, vk::Format::eR8G8Unorm},
-            {TINYGLTF_TYPE_VEC3, vk::Format::eR8G8B8Unorm},
-            {TINYGLTF_TYPE_VEC4, vk::Format::eR8G8B8A8Unorm},
-        },
-    },
-    {
-        TINYGLTF_COMPONENT_TYPE_SHORT,
-        {
-            {TINYGLTF_TYPE_SCALAR, vk::Format::eR16Sint},
-            {TINYGLTF_TYPE_VEC2, vk::Format::eR16G16Sint},
-            {TINYGLTF_TYPE_VEC3, vk::Format::eR16G16B16Sint},
-            {TINYGLTF_TYPE_VEC4, vk::Format::eR16G16B16A16Sint},
-        },
-    },
-    {
-        TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT,
-        {
-            {TINYGLTF_TYPE_SCALAR, vk::Format::eR16Uint},
-            {TINYGLTF_TYPE_VEC2, vk::Format::eR16G16Uint},
-            {TINYGLTF_TYPE_VEC3, vk::Format::eR16G16B16Uint},
-            {TINYGLTF_TYPE_VEC4, vk::Format::eR16G16B16A16Uint},
-        },
-    },
-    {
-        -TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT,
-        {
-            {TINYGLTF_TYPE_SCALAR, vk::Format::eR16Unorm},
-            {TINYGLTF_TYPE_VEC2, vk::Format::eR16G16Unorm},
-            {TINYGLTF_TYPE_VEC3, vk::Format::eR16G16B16Unorm},
-            {TINYGLTF_TYPE_VEC4, vk::Format::eR16G16B16A16Unorm},
-        },
-    },
-    {
-        TINYGLTF_COMPONENT_TYPE_INT,
-        {
-            {TINYGLTF_TYPE_SCALAR, vk::Format::eR32Sint},
-            {TINYGLTF_TYPE_VEC2, vk::Format::eR32G32Sint},
-            {TINYGLTF_TYPE_VEC3, vk::Format::eR32G32B32Sint},
-            {TINYGLTF_TYPE_VEC4, vk::Format::eR32G32B32A32Sint},
-        },
-    },
-    {
-        TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT,
-        {
-            {TINYGLTF_TYPE_SCALAR, vk::Format::eR32Uint},
-            {TINYGLTF_TYPE_VEC2, vk::Format::eR32G32Uint},
-            {TINYGLTF_TYPE_VEC3, vk::Format::eR32G32B32Uint},
-            {TINYGLTF_TYPE_VEC4, vk::Format::eR32G32B32A32Uint},
-        },
-    },
-    {
-        TINYGLTF_COMPONENT_TYPE_FLOAT,
-        {
-            {TINYGLTF_TYPE_SCALAR, vk::Format::eR32Sfloat},
-            {TINYGLTF_TYPE_VEC2, vk::Format::eR32G32Sfloat},
-            {TINYGLTF_TYPE_VEC3, vk::Format::eR32G32B32Sfloat},
-            {TINYGLTF_TYPE_VEC4, vk::Format::eR32G32B32A32Sfloat},
-        },
-    },
-    {TINYGLTF_COMPONENT_TYPE_DOUBLE,
+static const std::vector<std::string> attributes_names = {
+    "POSITION",
+    "NORMAL",
+    "TEXCOORD_0",
+    "COLOR_0",
+};
+
+static const std::unordered_map<int, std::unordered_map<int, vk::Format>> formats_map =
+    {{
+         TINYGLTF_COMPONENT_TYPE_BYTE,
+         {
+             {TINYGLTF_TYPE_SCALAR, vk::Format::eR8Sint},
+             {TINYGLTF_TYPE_VEC2, vk::Format::eR8G8Sint},
+             {TINYGLTF_TYPE_VEC3, vk::Format::eR8G8B8Sint},
+             {TINYGLTF_TYPE_VEC4, vk::Format::eR8G8B8A8Sint},
+         },
+     },
      {
-         {TINYGLTF_TYPE_SCALAR, vk::Format::eR64Sfloat},
-         {TINYGLTF_TYPE_VEC2, vk::Format::eR64G64Sfloat},
-         {TINYGLTF_TYPE_VEC3, vk::Format::eR64G64B64Sfloat},
-         {TINYGLTF_TYPE_VEC4, vk::Format::eR64G64B64A64Sfloat},
-     }}};
+         TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE,
+         {
+             {TINYGLTF_TYPE_SCALAR, vk::Format::eR8Uint},
+             {TINYGLTF_TYPE_VEC2, vk::Format::eR8G8Uint},
+             {TINYGLTF_TYPE_VEC3, vk::Format::eR8G8B8Uint},
+             {TINYGLTF_TYPE_VEC4, vk::Format::eR8G8B8A8Uint},
+         },
+     },
+     {
+         -TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE,
+         {
+             {TINYGLTF_TYPE_SCALAR, vk::Format::eR8Unorm},
+             {TINYGLTF_TYPE_VEC2, vk::Format::eR8G8Unorm},
+             {TINYGLTF_TYPE_VEC3, vk::Format::eR8G8B8Unorm},
+             {TINYGLTF_TYPE_VEC4, vk::Format::eR8G8B8A8Unorm},
+         },
+     },
+     {
+         TINYGLTF_COMPONENT_TYPE_SHORT,
+         {
+             {TINYGLTF_TYPE_SCALAR, vk::Format::eR16Sint},
+             {TINYGLTF_TYPE_VEC2, vk::Format::eR16G16Sint},
+             {TINYGLTF_TYPE_VEC3, vk::Format::eR16G16B16Sint},
+             {TINYGLTF_TYPE_VEC4, vk::Format::eR16G16B16A16Sint},
+         },
+     },
+     {
+         TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT,
+         {
+             {TINYGLTF_TYPE_SCALAR, vk::Format::eR16Uint},
+             {TINYGLTF_TYPE_VEC2, vk::Format::eR16G16Uint},
+             {TINYGLTF_TYPE_VEC3, vk::Format::eR16G16B16Uint},
+             {TINYGLTF_TYPE_VEC4, vk::Format::eR16G16B16A16Uint},
+         },
+     },
+     {
+         -TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT,
+         {
+             {TINYGLTF_TYPE_SCALAR, vk::Format::eR16Unorm},
+             {TINYGLTF_TYPE_VEC2, vk::Format::eR16G16Unorm},
+             {TINYGLTF_TYPE_VEC3, vk::Format::eR16G16B16Unorm},
+             {TINYGLTF_TYPE_VEC4, vk::Format::eR16G16B16A16Unorm},
+         },
+     },
+     {
+         TINYGLTF_COMPONENT_TYPE_INT,
+         {
+             {TINYGLTF_TYPE_SCALAR, vk::Format::eR32Sint},
+             {TINYGLTF_TYPE_VEC2, vk::Format::eR32G32Sint},
+             {TINYGLTF_TYPE_VEC3, vk::Format::eR32G32B32Sint},
+             {TINYGLTF_TYPE_VEC4, vk::Format::eR32G32B32A32Sint},
+         },
+     },
+     {
+         TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT,
+         {
+             {TINYGLTF_TYPE_SCALAR, vk::Format::eR32Uint},
+             {TINYGLTF_TYPE_VEC2, vk::Format::eR32G32Uint},
+             {TINYGLTF_TYPE_VEC3, vk::Format::eR32G32B32Uint},
+             {TINYGLTF_TYPE_VEC4, vk::Format::eR32G32B32A32Uint},
+         },
+     },
+     {
+         TINYGLTF_COMPONENT_TYPE_FLOAT,
+         {
+             {TINYGLTF_TYPE_SCALAR, vk::Format::eR32Sfloat},
+             {TINYGLTF_TYPE_VEC2, vk::Format::eR32G32Sfloat},
+             {TINYGLTF_TYPE_VEC3, vk::Format::eR32G32B32Sfloat},
+             {TINYGLTF_TYPE_VEC4, vk::Format::eR32G32B32A32Sfloat},
+         },
+     },
+     {TINYGLTF_COMPONENT_TYPE_DOUBLE, {
+                                          {TINYGLTF_TYPE_SCALAR, vk::Format::eR64Sfloat},
+                                          {TINYGLTF_TYPE_VEC2, vk::Format::eR64G64Sfloat},
+                                          {TINYGLTF_TYPE_VEC3, vk::Format::eR64G64B64Sfloat},
+                                          {TINYGLTF_TYPE_VEC4, vk::Format::eR64G64B64A64Sfloat},
+                                      }}};
