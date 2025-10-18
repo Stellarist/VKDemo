@@ -2,7 +2,7 @@
 
 #include "DescriptorManager.hpp"
 #include "Shader.hpp"
-#include "common/RenderData.hpp"
+#include "render/rhi/GPUVertex.hpp"
 
 GraphicsPipeline::GraphicsPipeline(Context& c, RenderPass& r, const GraphicsPipelineConfig& p) :
     context(&c),
@@ -14,10 +14,10 @@ GraphicsPipeline::GraphicsPipeline(Context& c, RenderPass& r, const GraphicsPipe
 	shader.setStage(vk::ShaderStageFlagBits::eVertex, "vertexMain");
 	shader.setStage(vk::ShaderStageFlagBits::eFragment, "fragmentMain");
 
-	auto vbinding = Vertex::binding();
-	auto vattributes = Vertex::attributes();
+	auto vbinding = GPUVertex::binding();
+	auto vattributes = GPUVertex::attributes();
 
-	descriptor_bindings.push_back(Transform::binding(0));
+	descriptor_bindings.push_back(GPUTransform::binding(0));
 	descriptor_bindings.push_back(Sampler::binding(1));
 
 	vk::DescriptorSetLayoutBinding tex_binding{};

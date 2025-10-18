@@ -1,7 +1,7 @@
 #include "render/Renderer.hpp"
 #include "gui/Window.hpp"
 #include "resource/SceneLoader.hpp"
-#include "helper.hpp"
+#include "utils/helper.hpp"
 
 int main(int argc, char** argv)
 {

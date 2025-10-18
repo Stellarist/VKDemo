@@ -4,7 +4,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-struct Vertex {
+struct GPUVertex {
 	glm::vec3 pos;
 	glm::vec3 normal;
 	glm::vec2 uv;
@@ -14,7 +14,7 @@ struct Vertex {
 	static std::vector<vk::VertexInputAttributeDescription> attributes(uint32_t binding = {});
 };
 
-struct Transform {
+struct GPUTransform {
 	glm::mat4 model;
 	glm::mat4 view;
 	glm::mat4 projection;

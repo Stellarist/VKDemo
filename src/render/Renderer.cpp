@@ -8,18 +8,18 @@
 #include "graphics/CommandManager.hpp"
 #include "graphics/SyncManager.hpp"
 #include "graphics/Buffer.hpp"
-#include "common/RenderData.hpp"
+#include "render/rhi/GPUVertex.hpp"
 
-std::array<Vertex, 4> vertices = {
-    Vertex{{-0.5, -0.5, 0.0}, {0.0, 0.0, -1.0}, {0.0, 0.0}, {1.0, 0.0, 0.0, 1.0}},
-    Vertex{{-0.5, 0.5, 0.0}, {0.0, 0.0, -1.0}, {0.0, 1.0}, {1.0, 1.0, 0.0, 1.0}},
-    Vertex{{0.5, 0.5, 0.0}, {0.0, 0.0, -1.0}, {1.0, 1.0}, {0.0, 0.0, 1.0, 1.0}},
-    Vertex{{0.5, -0.5, 0.0}, {0.0, 0.0, -1.0}, {1.0, 0.0}, {0.0, 1.0, 0.0, 1.0}},
+std::array<GPUVertex, 4> vertices = {
+    GPUVertex{{-0.5, -0.5, 0.0}, {0.0, 0.0, -1.0}, {0.0, 0.0}, {1.0, 0.0, 0.0, 1.0}},
+    GPUVertex{{-0.5, 0.5, 0.0}, {0.0, 0.0, -1.0}, {0.0, 1.0}, {1.0, 1.0, 0.0, 1.0}},
+    GPUVertex{{0.5, 0.5, 0.0}, {0.0, 0.0, -1.0}, {1.0, 1.0}, {0.0, 0.0, 1.0, 1.0}},
+    GPUVertex{{0.5, -0.5, 0.0}, {0.0, 0.0, -1.0}, {1.0, 0.0}, {0.0, 1.0, 0.0, 1.0}},
 };
 
 std::array<uint32_t, 6> indices = {0, 1, 2, 2, 3, 0};
 
-Transform transform = {
+GPUTransform transform = {
     .model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
     .view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
     .projection = glm::perspective(glm::radians(45.0f), 2560.0f / 1440.0f, 0.1f, 100.0f),
@@ -35,7 +35,7 @@ Renderer::Renderer(Window& window)
 	// TODO: turn it to non-static
 	vertex_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eVertexBuffer, vertices.data(), sizeof(vertices));
 	index_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eIndexBuffer, indices.data(), sizeof(indices));
-	uniform_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eUniformBuffer, &transform, sizeof(Transform));
+	uniform_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eUniformBuffer, &transform, sizeof(GPUTransform));
 	image = std::make_unique<Image>(*context, ASSETS_DIR "/a.jpeg");
 	sampler = std::make_unique<Sampler>(*context);
 	image->setSampler(*sampler);
