@@ -36,12 +36,6 @@ public:
 	static std::unique_ptr<Light>    parseLight(const tinygltf::Light& tflight);
 	static std::unique_ptr<Material> parseMaterial(const tinygltf::Material& tfmaterial);
 	static std::unique_ptr<Texture>  parseTexture(const tinygltf::Texture& tftexture);
-
-	static void printSceneNodes(const Scene& scene);
-	static void printSceneComponents(const Scene& scene);
-	static void exportSubmeshToOBJ(const SubMesh& submesh, const std::string& filepath);
-	static void printSubmeshInfo(const SubMesh& submesh);
-	static void printSubmeshDetailed(const SubMesh& submesh);
 };
 
 template <typename S, typename D>
