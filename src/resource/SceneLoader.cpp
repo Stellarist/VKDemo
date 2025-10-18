@@ -365,20 +365,9 @@ std::unique_ptr<Texture> SceneLoader::parseTexture(const tinygltf::Texture& tfte
 
 std::vector<uint8_t> SceneLoader::getAttributeData(const tinygltf::Model& model, uint32_t accessor_index)
 {
-	assert(accessor_index < model.accessors.size());
-	const auto& accessor = model.accessors[accessor_index];
+	auto view = getAttributeDataView(model, accessor_index);
 
-	assert(accessor.bufferView < model.bufferViews.size());
-	const auto& buffer_view = model.bufferViews[accessor.bufferView];
-
-	assert(buffer_view.buffer < model.buffers.size());
-	const auto& buffer = model.buffers[buffer_view.buffer];
-
-	auto stride = accessor.ByteStride(buffer_view);
-	auto start_byte = accessor.byteOffset + buffer_view.byteOffset;
-	auto end_byte = start_byte + accessor.count * stride;
-
-	return {buffer.data.begin() + start_byte, buffer.data.begin() + end_byte};
+	return {view.begin(), view.end()};
 }
 
 std::span<const uint8_t> SceneLoader::getAttributeDataView(const tinygltf::Model& model, uint32_t accessor_index)
