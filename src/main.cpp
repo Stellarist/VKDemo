@@ -9,12 +9,10 @@ int main(int argc, char** argv)
 	printSceneNodes(*scene);
 	printSceneComponents(*scene);
 
-	auto submeshes = scene->getComponents<SubMesh>();
-	for (size_t i = 0; i < submeshes.size(); ++i) {
-		const auto& submesh = *submeshes[i];
-		printSubmeshInfo(submesh);
-		exportSubmeshToOBJ(submesh, std::format("submesh_{}.obj", i));
-		printSubmeshDetailed(submesh);
+	for (const auto& submesh : scene->getComponents<SubMesh>()) {
+		printSubmeshInfo(*submesh);
+		exportSubmeshToOBJ(*submesh, std::format("submesh_{}.obj", submesh->getName()));
+		printSubmeshDetailed(*submesh);
 	}
 
 	Window   window("VKDemo", 2560, 1440);
