@@ -12,6 +12,8 @@
 #include "graphics/Buffer.hpp"
 #include "graphics/Image.hpp"
 #include "graphics/Sampler.hpp"
+#include "scene/Scene.hpp"
+#include "RenderScene.hpp"
 
 struct Frame {
 	uint32_t           image_index{};
@@ -35,11 +37,14 @@ struct Renderer {
 	std::unique_ptr<Image>   image;
 	std::unique_ptr<Sampler> sampler;
 
+	std::unique_ptr<RenderScene> render_scene;
+
 	Frame frame;
 
 	Renderer(Window& window);
 	~Renderer() = default;
 
+	void setScene(const Scene& scene);
 	void begin();
 	void end();
 	void wait();

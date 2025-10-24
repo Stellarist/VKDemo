@@ -18,6 +18,8 @@ int main(int argc, char** argv)
 	Window   window("VKDemo", 2560, 1440);
 	Renderer renderer(window);
 
+	renderer.setScene(*scene);
+
 	// Widget widget(window, *renderer.context, *renderer.render_pass);
 
 	while (!window.shouldClose()) {

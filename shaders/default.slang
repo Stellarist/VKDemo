@@ -40,5 +40,15 @@ VSOutput vertexMain(VSInput input)
 [shader("fragment")]
 float4 fragmentMain(VSOutput input) 
 {
-    return sampler.Sample(input.uv) * float4(input.color);
+    float3 lightDir = normalize(float3(0.5, 1.0, 0.5));
+    float3 normal = normalize(input.normal);
+    float diffuse = max(dot(normal, lightDir), 0.0);
+    float ambient = 0.3;
+    
+    float3 lighting = float3(ambient + diffuse * 0.7);
+    
+    // float4 texColor = sampler.Sample(input.uv);
+    // return float4(lighting, 1.0) * texColor * input.color;
+    
+    return float4(lighting * input.color.rgb, input.color.a);
 }

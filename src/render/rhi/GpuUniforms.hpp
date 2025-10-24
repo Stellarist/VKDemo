@@ -1,9 +1,12 @@
 #pragma once
 
-#include <glm/glm.hpp>
 #include <vulkan/vulkan.hpp>
+#include <glm/glm.hpp>
 
-struct GpuTransform {
+struct GpuUniforms {
+};
+
+struct GpuTransform : public GpuUniforms {
 	glm::mat4 model;
 	glm::mat4 view;
 	glm::mat4 projection;

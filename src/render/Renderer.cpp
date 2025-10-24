@@ -20,11 +20,20 @@ std::array<GpuVertex, 4> vertices = {
 
 std::array<uint32_t, 6> indices = {0, 1, 2, 2, 3, 0};
 
-GpuTransform transform = {
-    .model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
-    .view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
-    .projection = glm::perspective(glm::radians(45.0f), 2560.0f / 1440.0f, 0.1f, 100.0f),
-};
+GpuTransform createTransform()
+{
+	// Vulkan使用右手坐标系，Y轴向下，Z范围0到1
+	auto proj = glm::perspective(glm::radians(45.0f), 2560.0f / 1440.0f, 0.1f, 100.0f);
+	proj[1][1] *= -1.0f;        // 翻转Y轴以适配Vulkan
+
+	return GpuTransform{
+	    .model = glm::mat4(1.0f),
+	    .view = glm::lookAt(glm::vec3(0.0f, 6.0f, 12.0f), glm::vec3(0.0f, 0.75f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+	    .projection = proj,
+	};
+}
+
+GpuTransform transform = createTransform();
 
 Renderer::Renderer(Window& window)
 {
@@ -33,11 +42,10 @@ Renderer::Renderer(Window& window)
 	render_pass = std::make_unique<RenderPass>(*context, *swap_chain);
 	graphics_pipeline = std::make_unique<GraphicsPipeline>(*context, *render_pass);
 
-	// TODO: turn it to non-static
-	vertex_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eVertexBuffer, vertices.data(), sizeof(vertices));
-	index_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eIndexBuffer, indices.data(), sizeof(indices));
-	uniform_buffer = Buffer::createAndUpload(*context, vk::BufferUsageFlagBits::eUniformBuffer, &transform, sizeof(GpuTransform));
-	image = std::make_unique<Image>(*context, ASSETS_DIR "/a.jpeg");
+	vertex_buffer = Buffer::createFrom(*context, vk::BufferUsageFlagBits::eVertexBuffer, vertices.data(), sizeof(vertices));
+	index_buffer = Buffer::createFrom(*context, vk::BufferUsageFlagBits::eIndexBuffer, indices.data(), sizeof(indices));
+	uniform_buffer = Buffer::createFrom(*context, vk::BufferUsageFlagBits::eUniformBuffer, &transform, sizeof(GpuTransform));
+	image = std::make_unique<Image>(*context, ASSETS_DIR "/background.jpeg");
 	sampler = std::make_unique<Sampler>(*context);
 	image->setSampler(*sampler);
 
@@ -96,13 +104,24 @@ void Renderer::end()
 	frame.fence = context->getSyncManager().nextFence(frame.fence);
 }
 
+void Renderer::setScene(const Scene& scene)
+{
+	render_scene = std::make_unique<RenderScene>(*context, scene);
+}
+
 void Renderer::draw()
 {
 	frame.command.bindPipeline(vk::PipelineBindPoint::eGraphics, graphics_pipeline->get());
-	frame.command.bindVertexBuffers(0, vertex_buffer->get(), {0});
-	frame.command.bindIndexBuffer(index_buffer->get(), 0, vk::IndexType::eUint32);
 	frame.command.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, graphics_pipeline->getLayout(), 0, frame.set, {});
-	frame.command.drawIndexed(indices.size(), 1, 0, 0, 0);
+
+	// 如果有场景，绘制场景中的所有网格
+	if (render_scene)
+		render_scene->draw(frame.command);
+	else {
+		frame.command.bindVertexBuffers(0, vertex_buffer->get(), {0});
+		frame.command.bindIndexBuffer(index_buffer->get(), 0, vk::IndexType::eUint32);
+		frame.command.drawIndexed(indices.size(), 1, 0, 0, 0);
+	}
 }
 
 void Renderer::wait()
