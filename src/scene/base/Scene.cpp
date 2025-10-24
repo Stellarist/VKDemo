@@ -2,8 +2,6 @@
 
 #include <queue>
 
-#include "scene/components/SubMesh.hpp"
-
 Scene::Scene(std::string name) :
     name(std::move(name))
 {}
@@ -39,17 +37,19 @@ void Scene::addNode(std::unique_ptr<Node>&& node)
 	nodes.emplace_back(std::move(node));
 }
 
+Node& Scene::getRoot()
+{
+	return *root;
+}
+
+void Scene::setRoot(Node& node)
+{
+	this->root = &node;
+}
+
 void Scene::addChild(Node& child)
 {
 	root->addChild(child);
-}
-
-auto Scene::getModel(uint32_t index) -> std::unique_ptr<Component>
-{
-	auto meshed = std::move(components.at(typeid(SubMesh)));
-
-	assert(index < meshed.size() && "Index out of bounds.");
-	return std::move(meshed[index]);
 }
 
 auto Scene::getComponents(const std::type_index& type) const -> const std::vector<std::unique_ptr<Component>>&
@@ -97,6 +97,42 @@ bool Scene::hasComponent(const std::type_index& type) const
 	return components.count(type) > 0;
 }
 
+auto Scene::getBehaviours() const -> const std::vector<std::unique_ptr<Behaviour>>&
+{
+	return behaviours;
+}
+
+void Scene::addBehaviour(std::unique_ptr<Behaviour>&& behaviour)
+{
+	behaviours.push_back(std::move(behaviour));
+	refreshBehaviours();
+}
+
+void Scene::addBehaviour(std::unique_ptr<Behaviour>&& behaviour, Node& node)
+{
+	node.addBehaviour(*behaviour);
+	behaviours.push_back(std::move(behaviour));
+	refreshBehaviours();
+}
+
+void Scene::removeBehaviour(Behaviour& behaviour)
+{
+	behaviours.erase(
+	    std::remove_if(behaviours.begin(), behaviours.end(),
+	                   [&behaviour](const std::unique_ptr<Behaviour>& b) {
+		                   return b.get() == &behaviour;
+	                   }),
+	    behaviours.end());
+	refreshBehaviours();
+}
+
+void Scene::refreshBehaviours()
+{
+	tickable_behaviours.clear();
+	for (auto& behaviour : behaviours)
+		tickable_behaviours.push_back(behaviour.get());
+}
+
 Node* Scene::findNode(const std::string& name)
 {
 	for (auto* node : root->getChildren()) {
@@ -116,12 +152,35 @@ Node* Scene::findNode(const std::string& name)
 	return nullptr;
 }
 
-void Scene::setRoot(Node& node)
+void Scene::start()
 {
-	this->root = &node;
+	for (auto& behaviour : behaviours) {
+		if (!behaviour->isStarted() && behaviour->isEnabled()) {
+			behaviour->start();
+			behaviour->setStarted(true);
+		}
+	}
 }
 
-Node& Scene::getRoot()
+void Scene::destroy()
 {
-	return *root;
+	for (auto& behaviour : behaviours) {
+		if (behaviour->isStarted()) {
+			behaviour->destroy();
+			behaviour->setStarted(false);
+		}
+	}
+}
+
+void Scene::update(float dt)
+{
+	for (auto* behaviour : tickable_behaviours) {
+		if (behaviour->isEnabled()) {
+			if (!behaviour->isStarted()) {
+				behaviour->start();
+				behaviour->setStarted(true);
+			}
+			behaviour->update(dt);
+		}
+	}
 }

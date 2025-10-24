@@ -59,6 +59,20 @@ bool Node::hasComponent(std::type_index type) const
 	return components.count(type) > 0;
 }
 
+void Node::addBehaviour(Behaviour& behaviour)
+{
+	behaviours.push_back(&behaviour);
+	behaviour.setNode(*this);
+}
+
+void Node::removeBehaviour(Behaviour& behaviour)
+{
+	behaviours.erase(
+	    std::remove(
+	        behaviours.begin(), behaviours.end(), &behaviour),
+	    behaviours.end());
+}
+
 const std::vector<Node*>& Node::getChildren() const
 {
 	return children;

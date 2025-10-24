@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "Component.hpp"
+#include "Behaviour.hpp"
 #include "scene/components/Transform.hpp"
 
 class Node : public Entity {
@@ -17,6 +18,7 @@ private:
 	std::vector<Node*> children;
 
 	std::unordered_map<std::type_index, Component*> components;
+	std::vector<Behaviour*>                         behaviours;
 
 public:
 	Node(size_t id, std::string name);
@@ -50,6 +52,13 @@ public:
 	bool hasComponent() const;
 	bool hasComponent(std::type_index type) const;
 
+	template <typename T>
+	T*   getBehaviour() const;
+	void addBehaviour(Behaviour& behaviour);
+	void removeBehaviour(Behaviour& behaviour);
+
+	auto getBehaviours() const -> const std::vector<Behaviour*>&;
+
 	const std::vector<Node*>& getChildren() const;
 	void                      addChild(Node& child);
 };
@@ -64,4 +73,14 @@ template <typename T>
 inline bool Node::hasComponent() const
 {
 	return hasComponent(typeid(T));
+}
+
+template <typename T>
+T* Node::getBehaviour() const
+{
+	for (auto* behaviour : behaviours)
+		if (dynamic_cast<T*>(behaviour))
+			return dynamic_cast<T&>(*behaviour);
+
+	return nullptr;
 }
