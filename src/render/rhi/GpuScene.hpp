@@ -9,8 +9,8 @@
 
 class GpuScene {
 private:
-	Context*     context{nullptr};
-	const Scene* scene{nullptr};
+	Context*     context{};
+	const Scene* scene{};
 
 	std::vector<std::unique_ptr<GpuMesh>> gpu_meshes;
 

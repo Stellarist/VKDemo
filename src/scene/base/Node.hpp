@@ -11,7 +11,7 @@ class Node : public Entity {
 private:
 	size_t      id;
 	std::string name;
-	Node*       parent{nullptr};
+	Node*       parent{};
 	Transform   transform;
 
 	std::vector<Node*> children;

@@ -12,7 +12,7 @@ class Scene : public Entity {
 private:
 	std::string name;
 
-	Node* root{nullptr};
+	Node* root{};
 
 	std::vector<std::unique_ptr<Node>> nodes;
 

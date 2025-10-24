@@ -15,7 +15,7 @@ struct VertexAttribute {
 
 class SubMesh : public Component {
 private:
-	const Material* material{nullptr};
+	const Material* material{};
 	std::string     shader_name;
 
 	uint32_t vertices_count{0};

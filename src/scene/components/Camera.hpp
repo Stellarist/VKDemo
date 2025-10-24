@@ -10,7 +10,7 @@
 
 class Camera : public Component {
 private:
-	Node*     node{nullptr};
+	Node*     node{};
 	glm::mat4 pre_rotation{1.0f};
 
 public:
