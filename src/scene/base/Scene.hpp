@@ -78,7 +78,6 @@ public:
 	Node* findNode(const std::string& name);
 
 	void start();
-	void destroy();
 	void update(float dt);
 };
 

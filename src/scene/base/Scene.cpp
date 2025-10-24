@@ -162,16 +162,6 @@ void Scene::start()
 	}
 }
 
-void Scene::destroy()
-{
-	for (auto& behaviour : behaviours) {
-		if (behaviour->isStarted()) {
-			behaviour->destroy();
-			behaviour->setStarted(false);
-		}
-	}
-}
-
 void Scene::update(float dt)
 {
 	for (auto* behaviour : tickable_behaviours) {

@@ -7,9 +7,6 @@ Behaviour::Behaviour(std::string name) :
 void Behaviour::start()
 {}
 
-void Behaviour::destroy()
-{}
-
 void Behaviour::update(float dt)
 {}
 

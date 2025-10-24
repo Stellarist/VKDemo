@@ -13,6 +13,7 @@ private:
 	bool started{false};
 	bool enabled{true};
 
+protected:
 	Node* node{};
 
 public:
@@ -30,7 +31,6 @@ public:
 	std::type_index getType() override = 0;
 
 	virtual void start();
-	virtual void destroy();
 	virtual void update(float dt);
 
 	auto getName() const -> const std::string&;
