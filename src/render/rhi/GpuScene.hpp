@@ -26,8 +26,5 @@ public:
 
 	~GpuScene() = default;
 
-	void update();
 	void draw(vk::CommandBuffer command_buffer);
-
-	auto getGpuMeshes() const -> const std::vector<std::unique_ptr<GpuMesh>>&;
 };
