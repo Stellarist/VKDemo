@@ -98,6 +98,13 @@ private:
 
 public:
 	GraphicsPipeline(Context& context, RenderPass& render_pass, const GraphicsPipelineConfig& config = {});
+
+	GraphicsPipeline(const GraphicsPipeline&) = delete;
+	GraphicsPipeline& operator=(const GraphicsPipeline&) = delete;
+
+	GraphicsPipeline(GraphicsPipeline&&) noexcept = default;
+	GraphicsPipeline& operator=(GraphicsPipeline&&) noexcept = default;
+
 	~GraphicsPipeline();
 
 	void create(const GraphicsPipelineConfig& config);

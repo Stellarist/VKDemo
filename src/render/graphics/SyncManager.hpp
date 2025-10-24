@@ -13,6 +13,13 @@ private:
 
 public:
 	SyncManager(Context& context);
+
+	SyncManager(const SyncManager&) = delete;
+	SyncManager& operator=(const SyncManager&) = delete;
+
+	SyncManager(SyncManager&&) noexcept = default;
+	SyncManager& operator=(SyncManager&&) noexcept = default;
+
 	~SyncManager();
 
 	vk::Semaphore allocateSemaphore();

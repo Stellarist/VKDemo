@@ -30,6 +30,9 @@ public:
 	Buffer(const Buffer&) = delete;
 	Buffer& operator=(const Buffer&) = delete;
 
+	Buffer(Buffer&&) noexcept = default;
+	Buffer& operator=(Buffer&&) noexcept = default;
+
 	~Buffer();
 
 	void map(size_t map_size, size_t map_offset = {});

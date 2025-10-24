@@ -12,6 +12,13 @@ private:
 
 public:
 	CommandManager(Context& context);
+
+	CommandManager(const CommandManager&) = delete;
+	CommandManager& operator=(const CommandManager&) = delete;
+
+	CommandManager(CommandManager&&) noexcept = default;
+	CommandManager& operator=(CommandManager&&) noexcept = default;
+
 	~CommandManager();
 
 	void createPool();

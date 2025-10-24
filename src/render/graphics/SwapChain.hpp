@@ -37,6 +37,13 @@ private:
 
 public:
 	SwapChain(Window& window, Context& context);
+
+	SwapChain(const SwapChain&) = delete;
+	SwapChain& operator=(const SwapChain&) = delete;
+
+	SwapChain(SwapChain&&) noexcept = default;
+	SwapChain& operator=(SwapChain&&) noexcept = default;
+
 	~SwapChain();
 
 	uint32_t acquireNextImage(vk::Semaphore semaphore, vk::Fence fence);

@@ -23,6 +23,13 @@ private:
 
 public:
 	DescriptorManager(Context& context);
+
+	DescriptorManager(const DescriptorManager&) = delete;
+	DescriptorManager& operator=(const DescriptorManager&) = delete;
+
+	DescriptorManager(DescriptorManager&&) noexcept = default;
+	DescriptorManager& operator=(DescriptorManager&&) noexcept = default;
+
 	~DescriptorManager();
 
 	vk::DescriptorPool      createPool(vk::DescriptorType type, uint32_t max_sets);
