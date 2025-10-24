@@ -38,6 +38,11 @@ void Buffer::allocate(vk::MemoryPropertyFlags properties)
 	memory = context->getLogicalDevice().allocateMemory(allocate_info);
 }
 
+void Buffer::bind(size_t bind_offset)
+{
+	context->getLogicalDevice().bindBufferMemory(buffer, memory, bind_offset);
+}
+
 void Buffer::map(size_t map_size, size_t map_offset)
 {
 	data = context->getLogicalDevice().mapMemory(memory, map_offset, map_size);
@@ -49,11 +54,6 @@ void Buffer::unmap()
 		context->getLogicalDevice().unmapMemory(memory);
 		data = nullptr;
 	}
-}
-
-void Buffer::bind(size_t bind_offset)
-{
-	context->getLogicalDevice().bindBufferMemory(buffer, memory, bind_offset);
 }
 
 void Buffer::copyTo(vk::Buffer dst, size_t size, size_t src_offset, size_t dst_offset)
@@ -80,19 +80,22 @@ void Buffer::copyFrom(vk::Buffer src, size_t size, size_t src_offset, size_t dst
 	});
 }
 
-void Buffer::upload(void* src, size_t src_size, size_t dst_offset)
+void Buffer::upload(const void* src, size_t src_size, size_t dst_offset)
 {
 	map(src_size, dst_offset);
 	std::memcpy(data, src, src_size);
 	unmap();
 }
 
-std::unique_ptr<Buffer> Buffer::createAndUpload(Context& context, vk::BufferUsageFlagBits Usage, void* src, size_t size)
+std::unique_ptr<Buffer> Buffer::createFrom(Context& context, vk::BufferUsageFlags Usage, const void* src, size_t size)
 {
+	if (!src || size == 0)
+		return nullptr;
+
 	auto host_buffer = std::make_unique<Buffer>(context, size,
 	                                            vk::BufferUsageFlagBits::eTransferSrc,
 	                                            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-	host_buffer->upload(static_cast<void*>(src), size);
+	host_buffer->upload(src, size);
 
 	auto device_buffer = std::make_unique<Buffer>(context, size,
 	                                              Usage | vk::BufferUsageFlagBits::eTransferDst,
