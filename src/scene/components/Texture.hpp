@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 
-#include "scene/Component.hpp"
+#include "scene/base/Component.hpp"
 
 class Texture : public Component {
 private:

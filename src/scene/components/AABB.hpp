@@ -4,7 +4,7 @@
 
 #include <glm/glm.hpp>
 
-#include "scene/Component.hpp"
+#include "scene/base/Component.hpp"
 
 class AABB : public Component {
 private:

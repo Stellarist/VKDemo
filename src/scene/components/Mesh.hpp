@@ -6,8 +6,8 @@
 
 #include "AABB.hpp"
 #include "SubMesh.hpp"
-#include "scene/Component.hpp"
-#include "scene/Node.hpp"
+#include "scene/base/Component.hpp"
+#include "scene/base/Node.hpp"
 
 class Mesh : public Component {
 private:

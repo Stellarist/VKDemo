@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-#include "scene/Component.hpp"
+#include "scene/base/Component.hpp"
 
 class Node;
 

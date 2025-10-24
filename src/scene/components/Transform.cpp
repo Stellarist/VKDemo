@@ -1,6 +1,6 @@
 #include "Transform.hpp"
 
-#include "scene/Node.hpp"
+#include "scene/base/Node.hpp"
 
 Transform::Transform(Node& node) :
     node(node)

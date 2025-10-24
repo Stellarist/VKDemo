@@ -5,7 +5,7 @@
 #include <unordered_map>
 
 #include "Component.hpp"
-#include "components/Transform.hpp"
+#include "scene/components/Transform.hpp"
 
 class Node : public Entity {
 private:

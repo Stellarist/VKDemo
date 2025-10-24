@@ -5,7 +5,7 @@
 
 #include <glm/glm.hpp>
 
-#include "scene/Component.hpp"
+#include "scene/base/Component.hpp"
 #include "Texture.hpp"
 
 enum class AlphaMode : uint8_t {

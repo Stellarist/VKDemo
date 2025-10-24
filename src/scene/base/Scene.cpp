@@ -2,7 +2,7 @@
 
 #include <queue>
 
-#include "components/SubMesh.hpp"
+#include "scene/components/SubMesh.hpp"
 
 Scene::Scene(std::string name) :
     name(std::move(name))

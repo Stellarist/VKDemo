@@ -4,7 +4,7 @@
 #include <vector>
 #include <unordered_map>
 
-#include "scene/Component.hpp"
+#include "scene/base/Component.hpp"
 #include "Material.hpp"
 
 struct VertexAttribute {

@@ -12,7 +12,7 @@
 #include "graphics/Buffer.hpp"
 #include "graphics/Image.hpp"
 #include "graphics/Sampler.hpp"
-#include "scene/Scene.hpp"
+#include "scene/base/Scene.hpp"
 #include "RenderScene.hpp"
 
 struct Frame {

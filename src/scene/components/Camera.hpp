@@ -5,8 +5,8 @@
 #include <glm/glm.hpp>
 
 #include "Transform.hpp"
-#include "scene/Component.hpp"
-#include "scene/Node.hpp"
+#include "scene/base/Component.hpp"
+#include "scene/base/Node.hpp"
 
 class Camera : public Component {
 private:

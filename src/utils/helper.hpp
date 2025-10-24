@@ -4,8 +4,8 @@
 #include <fstream>
 #include <iomanip>
 
-#include "scene/Scene.hpp"
-#include "scene/Node.hpp"
+#include "scene/base/Scene.hpp"
+#include "scene/base/Node.hpp"
 #include "scene/components/Mesh.hpp"
 #include "scene/components/Camera.hpp"
 #include "scene/components/Material.hpp"

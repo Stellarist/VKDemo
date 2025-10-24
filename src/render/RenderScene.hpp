@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include "scene/Scene.hpp"
+#include "scene/base/Scene.hpp"
 #include "rhi/GpuMesh.hpp"
 #include "graphics/Context.hpp"
 
