@@ -1,9 +1,9 @@
-#include "RenderScene.hpp"
+#include "GpuScene.hpp"
 
+#include "render/rhi/GpuMesh.hpp"
 #include "scene/components/SubMesh.hpp"
-#include "rhi/GpuMesh.hpp"
 
-RenderScene::RenderScene(Context& context, const Scene& scene) :
+GpuScene::GpuScene(Context& context, const Scene& scene) :
     context(&context), scene(&scene)
 {
 	auto submeshes = scene.getComponents<SubMesh>();
@@ -14,12 +14,12 @@ RenderScene::RenderScene(Context& context, const Scene& scene) :
 			gpu_meshes.push_back(std::make_unique<GpuMesh>(*this->context, *submesh));
 }
 
-void RenderScene::update()
+void GpuScene::update()
 {
 	// TODO: 实现场景更新逻辑
 }
 
-void RenderScene::draw(vk::CommandBuffer command_buffer)
+void GpuScene::draw(vk::CommandBuffer command_buffer)
 {
 	for (size_t i = 0; i < gpu_meshes.size(); i++) {
 		auto& gpu_mesh = gpu_meshes[i];
@@ -31,7 +31,7 @@ void RenderScene::draw(vk::CommandBuffer command_buffer)
 	}
 }
 
-auto RenderScene::getGpuMeshes() const -> const std::vector<std::unique_ptr<GpuMesh>>&
+auto GpuScene::getGpuMeshes() const -> const std::vector<std::unique_ptr<GpuMesh>>&
 {
 	return gpu_meshes;
 }

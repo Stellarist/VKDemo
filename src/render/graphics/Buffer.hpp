@@ -26,6 +26,10 @@ private:
 
 public:
 	Buffer(Context& context, uint32_t size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties);
+
+	Buffer(const Buffer&) = delete;
+	Buffer& operator=(const Buffer&) = delete;
+
 	~Buffer();
 
 	void map(size_t map_size, size_t map_offset = {});

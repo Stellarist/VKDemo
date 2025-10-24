@@ -4,7 +4,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 
-#include "gui/Window.hpp"
+#include "rhi/GpuScene.hpp"
 #include "graphics/Context.hpp"
 #include "graphics/SwapChain.hpp"
 #include "graphics/RenderPass.hpp"
@@ -13,7 +13,7 @@
 #include "graphics/Image.hpp"
 #include "graphics/Sampler.hpp"
 #include "scene/base/Scene.hpp"
-#include "RenderScene.hpp"
+#include "gui/Window.hpp"
 
 struct Frame {
 	uint32_t           image_index{};
@@ -37,7 +37,7 @@ struct Renderer {
 	std::unique_ptr<Image>   image;
 	std::unique_ptr<Sampler> sampler;
 
-	std::unique_ptr<RenderScene> render_scene;
+	std::unique_ptr<GpuScene> render_scene;
 
 	Frame frame;
 

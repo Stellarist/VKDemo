@@ -106,7 +106,7 @@ void Renderer::end()
 
 void Renderer::setScene(const Scene& scene)
 {
-	render_scene = std::make_unique<RenderScene>(*context, scene);
+	render_scene = std::make_unique<GpuScene>(*context, scene);
 }
 
 void Renderer::draw()
