@@ -1,6 +1,6 @@
-# VKDemo
+# VKEngine
 
-A toy demo with Vulkan.
+A toy engine in Vulkan.
 
 ┌─────────────────────────────────────────┐
 │          Application Layer              │

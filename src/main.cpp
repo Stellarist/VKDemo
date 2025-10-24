@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 		printSubmeshDetailed(*submesh);
 	}
 
-	Window   window("VKDemo", 2560, 1440);
+	Window   window("VKEngine", 2560, 1440);
 	Renderer renderer(window);
 
 	renderer.setScene(*scene);
