@@ -2,7 +2,7 @@
     "version": 3,
     "configurePresets": [
         {
-            "name": "Clang",
+            "name": "clang",
             "binaryDir": "${sourceDir}/build",
             "generator": "Ninja",
             "cacheVariables": {
@@ -13,7 +13,7 @@
             }
         },
         {
-            "name": "Msvc",
+            "name": "msvc",
             "binaryDir": "${sourceDir}/build",
             "generator": "Visual Studio 18 2026",
             "cacheVariables": {

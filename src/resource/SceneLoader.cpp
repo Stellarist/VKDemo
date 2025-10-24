@@ -89,7 +89,7 @@ std::unique_ptr<Scene> SceneLoader::loadScene(std::string_view file_path)
 	if (!tfscene)
 		throw std::runtime_error("No default scene found in glTF file.");
 
-	auto root_node = std::make_unique<Node>(0, tfscene->name);
+	auto root_node = std::make_unique<Node>(-1, tfscene->name);
 	for (auto node_index : tfscene->nodes)
 		traverse_nodes.push({std::ref(*root_node), node_index});
 

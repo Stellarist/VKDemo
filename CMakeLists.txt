@@ -18,11 +18,11 @@ find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
 add_executable(VKDemo
 	${SRC_LIST}
+	${INC_LIST}
 )
 
 target_include_directories(VKDemo
-	PRIVATE
-		src
+	PRIVATE src
 )
 
 target_compile_definitions(VKDemo
