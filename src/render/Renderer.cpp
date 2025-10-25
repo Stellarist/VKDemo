@@ -104,17 +104,11 @@ void Renderer::end()
 	frame.fence = context->getSyncManager().nextFence(frame.fence);
 }
 
-void Renderer::setScene(const Scene& scene)
-{
-	render_scene = std::make_unique<GpuScene>(*context, scene);
-}
-
 void Renderer::draw()
 {
 	frame.command.bindPipeline(vk::PipelineBindPoint::eGraphics, graphics_pipeline->get());
 	frame.command.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, graphics_pipeline->getLayout(), 0, frame.set, {});
 
-	// 如果有场景，绘制场景中的所有网格
 	if (render_scene)
 		render_scene->draw(frame.command);
 	else {
@@ -127,4 +121,27 @@ void Renderer::draw()
 void Renderer::wait()
 {
 	context->getLogicalDevice().waitIdle();
+}
+
+void Renderer::tick(float dt)
+{
+	if (!active_level)
+		return;
+
+	begin();
+	draw();
+	end();
+	wait();
+}
+
+Level* Renderer::getActiveLevel() const
+{
+	return active_level;
+}
+
+void Renderer::setActiveLevel(Level& level)
+{
+	active_level = &level;
+
+	render_scene = std::make_unique<GpuScene>(*context, *active_level->getActiveScene());
 }

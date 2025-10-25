@@ -12,7 +12,7 @@
 #include "graphics/Buffer.hpp"
 #include "graphics/Image.hpp"
 #include "graphics/Sampler.hpp"
-#include "scene/base/Scene.hpp"
+#include "scene/Level.hpp"
 #include "gui/Window.hpp"
 
 struct Frame {
@@ -39,6 +39,8 @@ struct Renderer {
 
 	std::unique_ptr<GpuScene> render_scene;
 
+	Level* active_level{};
+
 	Frame frame;
 
 	Renderer(Window& window);
@@ -51,9 +53,13 @@ struct Renderer {
 
 	~Renderer() = default;
 
-	void setScene(const Scene& scene);
 	void begin();
 	void end();
 	void wait();
 	void draw();
+
+	void tick(float dt);
+
+	auto getActiveLevel() const -> Level*;
+	void setActiveLevel(Level& level);
 };

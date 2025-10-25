@@ -13,6 +13,7 @@ private:
 
 public:
 	Level() = default;
+	Level(std::unique_ptr<Scene>&& scene);
 
 	Level(const Level&) = delete;
 	Level& operator=(const Level&) = delete;
@@ -22,9 +23,11 @@ public:
 
 	~Level() = default;
 
-	auto getActiveScene() -> Scene*;
+	void tick(float dt);
+
+	auto getActiveScene() const -> Scene*;
 	void setActiveScene(std::unique_ptr<Scene>&& scene);
 
-	auto getActiveCamera() -> Camera*;
+	auto getActiveCamera() const -> Camera*;
 	void setActiveCamera(Camera* camera);
 };
